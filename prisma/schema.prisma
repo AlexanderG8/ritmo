@@ -1,0 +1,219 @@
+// Ritmo — sistema de seguimiento profesional
+// Ver docs/PLAN.md
+//
+// Prisma 7: el generator es "prisma-client" (no "prisma-client-js"), `output`
+// es obligatorio, y `directUrl` ya no existe en el datasource: la URL directa
+// para migraciones se declara en prisma.config.ts.
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  // Sin `url`: en Prisma 7 la conexión de runtime la aporta el driver adapter
+  // (src/lib/prisma.ts, pooled) y la de migraciones prisma.config.ts (directa).
+}
+
+// ─────────────────────────────────────────────────────────
+//  Ciclo semanal (auto-Scrum)
+//  weekStart = lunes, weekEnd = viernes. El fin de semana no
+//  existe en el modelo: es una decisión, no un olvido.
+// ─────────────────────────────────────────────────────────
+model WeeklyCycle {
+  id             String      @id @default(cuid())
+  weekStart      DateTime    @db.Date
+  weekEnd        DateTime    @db.Date
+  status         CycleStatus @default(PLANNING)
+
+  // Capacidad declarada el lunes, en minutos. Sirve para detectar
+  // sub-compromiso: cumplir 100% comprometiéndose a nada no es cumplir.
+  capacityMinutes Int?
+
+  retroWentWell  String?     @db.Text
+  retroToImprove String?     @db.Text
+  closedAt       DateTime?
+  createdAt      DateTime    @default(now())
+
+  commitments    Commitment[]
+  blockers       Blocker[]
+
+  @@unique([weekStart])
+  @@index([status])
+}
+
+enum CycleStatus {
+  PLANNING // lunes, definiendo compromisos
+  ACTIVE   // semana en curso
+  CLOSED   // retro hecha
+}
+
+// ─────────────────────────────────────────────────────────
+//  Compromisos
+// ─────────────────────────────────────────────────────────
+model Commitment {
+  id          String           @id @default(cuid())
+  cycleId     String
+  cycle       WeeklyCycle      @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+
+  title       String
+  description String?          @db.Text
+  category    WorkCategory
+  priority    Int              @default(2) // 1 alta, 2 media, 3 baja
+  status      CommitmentStatus @default(PLANNED)
+
+  // CORRECCIÓN: todo el tiempo se mide en minutos, en todo el schema.
+  // Nada de Decimal(horas) contra Int(minutos).
+  plannedMinutes Int?
+
+  // CORRECCIÓN: `actualMinutes` desaparece como columna. Es la suma de
+  // FocusBlock.actualMinutes y se calcula con un aggregate. Un contador
+  // duplicado que se incrementa a mano se desincroniza siempre.
+
+  // CORRECCIÓN (la más importante): distingue trabajo planificado el lunes
+  // de trabajo que entró a mitad de semana (una incidencia de Exactus).
+  // El % de cumplimiento se calcula SOLO sobre wasPlanned = true.
+  wasPlanned  Boolean          @default(true)
+
+  // ── Definition of Done ──
+  // requiresDoc + (docNotes no vacío OR al menos un Document vinculado).
+  // docNotes existe desde la Fase 1 para que el DoD nazca con la app y no
+  // se añada tres semanas después. La Fase 3 migra su contenido a Document.
+  requiresDoc Boolean          @default(true)
+  docNotes    String?          @db.Text
+
+  completedAt   DateTime?
+  carriedFromId String? // id del Commitment de la semana anterior
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  focusBlocks FocusBlock[]
+  blockers    Blocker[]
+  documents   CommitmentDocument[]
+
+  @@index([cycleId, status])
+  @@index([cycleId, wasPlanned])
+}
+
+enum CommitmentStatus {
+  PLANNED
+  IN_PROGRESS
+  BLOCKED
+  DONE
+  CARRIED_OVER // no se hizo, pasa a la siguiente semana
+  DROPPED      // se descartó conscientemente
+}
+
+enum WorkCategory {
+  SOPORTE       // incidencias Exactus
+  DESARROLLO    // app interna
+  REPORTES      // Report Builder / SSRS
+  DOCUMENTACION
+  APRENDIZAJE   // roadmap Big Tech
+  REUNION
+}
+
+// ─────────────────────────────────────────────────────────
+//  Bloques de foco
+// ─────────────────────────────────────────────────────────
+model FocusBlock {
+  id       String       @id @default(cuid())
+  date     DateTime     @db.Date
+  category WorkCategory
+
+  plannedStart  DateTime
+  plannedEnd    DateTime
+  actualStart   DateTime?
+  actualEnd     DateTime?
+  actualMinutes Int       @default(0)
+
+  distractions       Int     @default(0) // se incrementa manualmente
+  wasProtected       Boolean @default(true)
+  // Minutos del bloque que se comió una interrupción de soporte.
+  // Junto con Commitment.wasPlanned alimenta la métrica de trabajo no planificado.
+  interruptedMinutes Int     @default(0)
+  notes              String? @db.Text
+
+  commitmentId String?
+  commitment   Commitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+
+  createdAt DateTime @default(now())
+
+  @@index([date])
+  @@index([commitmentId])
+}
+
+// ─────────────────────────────────────────────────────────
+//  Registro diario
+// ─────────────────────────────────────────────────────────
+model DailyLog {
+  id   String   @id @default(cuid())
+  date DateTime @unique @db.Date
+
+  energyLevel Int     // 1-5
+  focusRating Int     // 1-5, autoevaluación honesta
+  win         String  @db.Text // OBLIGATORIO: 1 logro del día
+  friction    String? @db.Text // qué te frenó
+
+  createdAt DateTime @default(now())
+}
+
+// ─────────────────────────────────────────────────────────
+//  Documentación
+// ─────────────────────────────────────────────────────────
+model Document {
+  id        String   @id @default(cuid())
+  title     String
+  type      DocType
+  module    String?  // ej: "App Órdenes de Pago", "Exactus - CxC"
+  contentMd String   @db.Text
+  tags      String[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  commitments CommitmentDocument[]
+
+  @@index([type])
+}
+
+enum DocType {
+  FEATURE   // qué hace, cómo se usa, decisiones técnicas
+  PROCESO   // procedimiento operativo
+  INCIDENTE // postmortem de un soporte
+  REPORTE   // definición de un reporte
+  DECISION  // ADR: por qué se eligió X sobre Y
+}
+
+// CORRECCIÓN: la relación era 1:1 (documentId @unique) y no aguanta.
+// Un incidente genera varios docs; un doc de proceso cubre varias tareas;
+// y un doc vivo no pertenece a la tarea de una semana concreta.
+model CommitmentDocument {
+  commitmentId String
+  documentId   String
+  commitment   Commitment @relation(fields: [commitmentId], references: [id], onDelete: Cascade)
+  document     Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  createdAt    DateTime   @default(now())
+
+  @@id([commitmentId, documentId])
+  @@index([documentId])
+}
+
+// ─────────────────────────────────────────────────────────
+//  Bloqueos
+// ─────────────────────────────────────────────────────────
+model Blocker {
+  id           String      @id @default(cuid())
+  cycleId      String
+  cycle        WeeklyCycle @relation(fields: [cycleId], references: [id], onDelete: Cascade)
+  commitmentId String?
+  commitment   Commitment? @relation(fields: [commitmentId], references: [id], onDelete: SetNull)
+
+  description String   @db.Text
+  resolved    Boolean  @default(false)
+  resolvedAt  DateTime?
+  createdAt   DateTime @default(now())
+
+  @@index([cycleId, resolved])
+}
