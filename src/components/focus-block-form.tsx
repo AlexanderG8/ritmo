@@ -1,15 +1,13 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Select } from "@/components/field";
+import { Field, Select } from "@/components/field";
+import { FormError } from "@/components/form-message";
 import { categoryLabel } from "@/lib/labels";
-import {
-  createFocusBlockAction,
-  type ActionState,
-} from "@/actions/today";
+import { createFocusBlockAction, type ActionState } from "@/actions/today";
 
 export function FocusBlockForm({
   commitments,
@@ -29,8 +27,7 @@ export function FocusBlockForm({
   return (
     <form ref={formRef} action={action} className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="plannedStart">Desde</Label>
+        <Field htmlFor="plannedStart" label="Desde">
           <Input
             id="plannedStart"
             name="plannedStart"
@@ -38,9 +35,8 @@ export function FocusBlockForm({
             defaultValue="09:00"
             required
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="plannedEnd">Hasta</Label>
+        </Field>
+        <Field htmlFor="plannedEnd" label="Hasta">
           <Input
             id="plannedEnd"
             name="plannedEnd"
@@ -48,9 +44,8 @@ export function FocusBlockForm({
             defaultValue="10:30"
             required
           />
-        </div>
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="blockCategory">Categoría</Label>
+        </Field>
+        <Field htmlFor="blockCategory" label="Categoría">
           <Select id="blockCategory" name="category" defaultValue="DESARROLLO">
             {Object.entries(categoryLabel).map(([value, label]) => (
               <option key={value} value={value}>
@@ -58,12 +53,20 @@ export function FocusBlockForm({
               </option>
             ))}
           </Select>
-        </div>
+        </Field>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="commitmentId">Compromiso (opcional)</Label>
-        <Select id="commitmentId" name="commitmentId" defaultValue="">
+      <Field
+        htmlFor="commitmentId"
+        label="Compromiso (opcional)"
+        hint="Vincularlo es lo que hace que el tiempo real aparezca en la semana."
+      >
+        <Select
+          id="commitmentId"
+          name="commitmentId"
+          defaultValue=""
+          aria-describedby="commitmentId-hint"
+        >
           <option value="">Sin vincular</option>
           {commitments.map((commitment) => (
             <option key={commitment.id} value={commitment.id}>
@@ -71,16 +74,12 @@ export function FocusBlockForm({
             </option>
           ))}
         </Select>
-        <p className="text-muted-foreground text-xs">
-          Vincularlo es lo que hace que el tiempo real aparezca en la semana.
-        </p>
-      </div>
+      </Field>
 
-      {state.error ? (
-        <p className="text-destructive text-sm">{state.error}</p>
-      ) : null}
+      <FormError>{state.error}</FormError>
 
       <Button type="submit" disabled={pending} className="self-start">
+        <Plus aria-hidden />
         {pending ? "Creando…" : "Planificar bloque"}
       </Button>
     </form>

@@ -1,9 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
+import { Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/field";
+import { FormError } from "@/components/form-message";
 import {
   setCapacityAction,
   startWeekAction,
@@ -23,12 +25,16 @@ export function CapacityForm({
   );
 
   return (
-    <form action={action} className="flex flex-col gap-3">
+    <form action={action} className="flex flex-col gap-4">
       <input type="hidden" name="cycleId" value={cycleId} />
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="capacityMinutes">
-          Minutos realmente disponibles esta semana
-        </Label>
+
+      <Field
+        htmlFor="capacityMinutes"
+        label="Minutos realmente disponibles esta semana"
+        hint="No son tus horas de contrato. Descuenta soporte, reuniones e interrupciones. Si pones el número bonito, la métrica miente."
+        error={state.error}
+        className="max-w-xs"
+      >
         <Input
           id="capacityMinutes"
           name="capacityMinutes"
@@ -37,16 +43,12 @@ export function CapacityForm({
           step={30}
           defaultValue={capacityMinutes ?? ""}
           placeholder="1200"
+          aria-describedby="capacityMinutes-hint"
+          aria-invalid={state.error ? true : undefined}
           required
         />
-        <p className="text-muted-foreground text-xs">
-          No son tus horas de contrato. Descuenta soporte, reuniones e
-          interrupciones. Si pones el número bonito, la métrica miente.
-        </p>
-      </div>
-      {state.error ? (
-        <p className="text-destructive text-sm">{state.error}</p>
-      ) : null}
+      </Field>
+
       <Button
         type="submit"
         variant="secondary"
@@ -68,10 +70,9 @@ export function StartWeekForm({ cycleId }: { cycleId: string }) {
   return (
     <form action={action} className="flex flex-col gap-3">
       <input type="hidden" name="cycleId" value={cycleId} />
-      {state.error ? (
-        <p className="text-destructive text-sm">{state.error}</p>
-      ) : null}
+      <FormError>{state.error}</FormError>
       <Button type="submit" disabled={pending} className="self-start">
+        <Play aria-hidden />
         {pending ? "Iniciando…" : "Iniciar la semana"}
       </Button>
     </form>

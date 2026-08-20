@@ -1,11 +1,12 @@
 "use client";
 
 import { useActionState, useEffect, useRef } from "react";
+import { Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select } from "@/components/field";
+import { CheckboxField, Field, Select } from "@/components/field";
+import { FormError } from "@/components/form-message";
 import { categoryLabel, priorityLabel } from "@/lib/labels";
 import {
   createCommitmentAction,
@@ -33,21 +34,21 @@ export function CommitmentForm({
     <form ref={formRef} action={formAction} className="flex flex-col gap-4">
       <input type="hidden" name="cycleId" value={cycleId} />
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="title">
-          {unplanned ? "Qué entró sin estar planificado" : "Compromiso"}
-        </Label>
+      <Field
+        htmlFor="title"
+        label={unplanned ? "Qué entró sin estar planificado" : "Compromiso"}
+      >
         <Input
           id="title"
           name="title"
           placeholder="Concreto y verificable, no 'avanzar en X'"
+          aria-invalid={state.error ? true : undefined}
           required
         />
-      </div>
+      </Field>
 
       <div className="grid gap-4 sm:grid-cols-3">
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="category">Categoría</Label>
+        <Field htmlFor="category" label="Categoría">
           <Select id="category" name="category" defaultValue="DESARROLLO">
             {Object.entries(categoryLabel).map(([value, label]) => (
               <option key={value} value={value}>
@@ -55,10 +56,9 @@ export function CommitmentForm({
               </option>
             ))}
           </Select>
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="priority">Prioridad</Label>
+        <Field htmlFor="priority" label="Prioridad">
           <Select id="priority" name="priority" defaultValue="2">
             {Object.entries(priorityLabel).map(([value, label]) => (
               <option key={value} value={value}>
@@ -66,10 +66,9 @@ export function CommitmentForm({
               </option>
             ))}
           </Select>
-        </div>
+        </Field>
 
-        <div className="flex flex-col gap-2">
-          <Label htmlFor="plannedMinutes">Estimado (min)</Label>
+        <Field htmlFor="plannedMinutes" label="Estimado (min)">
           <Input
             id="plannedMinutes"
             name="plannedMinutes"
@@ -79,29 +78,21 @@ export function CommitmentForm({
             step={15}
             placeholder="90"
           />
-        </div>
+        </Field>
       </div>
 
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="description">Detalle (opcional)</Label>
+      <Field htmlFor="description" label="Detalle (opcional)">
         <Textarea id="description" name="description" rows={2} />
-      </div>
+      </Field>
 
-      <label className="flex items-center gap-2 text-sm">
-        <input
-          type="checkbox"
-          name="requiresDoc"
-          defaultChecked
-          className="size-4"
-        />
+      <CheckboxField name="requiresDoc" defaultChecked>
         Exige documentación para cerrarse
-      </label>
+      </CheckboxField>
 
-      {state.error ? (
-        <p className="text-destructive text-sm">{state.error}</p>
-      ) : null}
+      <FormError>{state.error}</FormError>
 
       <Button type="submit" disabled={pending} className="self-start">
+        <Plus aria-hidden />
         {pending ? "Guardando…" : "Agregar"}
       </Button>
     </form>

@@ -1,9 +1,12 @@
 "use client";
 
 import { useActionState, useEffect, useState } from "react";
+import { Play, Square, Trash2, Zap } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { FormError } from "@/components/form-message";
+import { cn } from "@/lib/utils";
 import { formatMinutes } from "@/lib/dates";
 import { categoryLabel } from "@/lib/labels";
 import {
@@ -28,6 +31,10 @@ export type FocusBlockView = {
   commitmentTitle: string | null;
 };
 
+/**
+ * Cronómetro. Monoespaciado y tabular: el ancho no baila al pasar los
+ * segundos, que es lo que hace ilegible un contador que cambia cada segundo.
+ */
 function Elapsed({ startIso }: { startIso: string }) {
   const [seconds, setSeconds] = useState<number | null>(null);
 
@@ -39,7 +46,10 @@ function Elapsed({ startIso }: { startIso: string }) {
     return () => clearInterval(id);
   }, [startIso]);
 
-  if (seconds === null) return <span className="tabular-nums">··:··</span>;
+  const className =
+    "numeric font-mono text-3xl leading-none font-semibold tracking-tight";
+
+  if (seconds === null) return <span className={className}>··:··</span>;
 
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
@@ -47,7 +57,7 @@ function Elapsed({ startIso }: { startIso: string }) {
   const pad = (value: number) => String(value).padStart(2, "0");
 
   return (
-    <span className="tabular-nums">
+    <span role="timer" aria-label="Tiempo transcurrido" className={className}>
       {hours > 0 ? `${pad(hours)}:` : ""}
       {pad(minutes)}:{pad(rest)}
     </span>
@@ -80,36 +90,35 @@ export function FocusBlockItem({ block }: { block: FocusBlockView }) {
     deleteState.error;
 
   return (
-    <li className="rounded-lg border p-4">
-      <div className="flex flex-wrap items-start justify-between gap-3">
-        <div>
-          <p className="font-medium tabular-nums">
+    <li
+      className={cn(
+        "bg-card flex flex-col gap-3 rounded-lg p-4 ring-1",
+        running ? "ring-foreground/30" : "ring-foreground/10",
+        block.finished && "bg-card/60",
+      )}
+    >
+      <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
+        <div className="min-w-0">
+          <p className="numeric text-sm font-medium">
             {block.plannedStart} – {block.plannedEnd}
           </p>
-          <div className="text-muted-foreground mt-1 flex flex-wrap items-center gap-2 text-xs">
+          <div className="text-muted-foreground mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-xs">
             <span>{categoryLabel[block.category]}</span>
-            {block.commitmentTitle ? (
-              <>
-                <span>·</span>
-                <span>{block.commitmentTitle}</span>
-              </>
-            ) : (
-              <>
-                <span>·</span>
-                <span>sin vincular</span>
-              </>
-            )}
+            <span aria-hidden>·</span>
+            <span className="truncate">
+              {block.commitmentTitle ?? "sin vincular"}
+            </span>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {running ? (
-            <Badge className="font-mono">
-              <Elapsed startIso={block.actualStartIso!} />
-            </Badge>
+            <Elapsed startIso={block.actualStartIso!} />
           ) : block.finished ? (
-            <Badge variant={block.wasProtected ? "default" : "outline"}>
-              {formatMinutes(block.actualMinutes)}
+            <Badge variant={block.wasProtected ? "success" : "outline"}>
+              <span className="numeric">
+                {formatMinutes(block.actualMinutes)}
+              </span>
               {block.wasProtected ? " protegido" : " interrumpido"}
             </Badge>
           ) : (
@@ -119,26 +128,32 @@ export function FocusBlockItem({ block }: { block: FocusBlockView }) {
       </div>
 
       {block.finished ? (
-        <p className="text-muted-foreground mt-3 text-xs">
+        <p className="text-muted-foreground numeric text-xs">
           {block.distractions} distracciones
           {block.interruptedMinutes > 0
             ? ` · ${formatMinutes(block.interruptedMinutes)} perdidos por interrupción`
             : ""}
         </p>
       ) : (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {!running ? (
             <>
               <form action={start}>
                 <input type="hidden" name="id" value={block.id} />
                 <Button type="submit" size="sm" disabled={starting}>
+                  <Play aria-hidden />
                   {starting ? "Iniciando…" : "Iniciar"}
                 </Button>
               </form>
               <form action={remove} className="ml-auto">
                 <input type="hidden" name="id" value={block.id} />
-                <Button type="submit" variant="ghost" size="sm">
-                  Eliminar
+                <Button
+                  type="submit"
+                  variant="ghost"
+                  size="icon-sm"
+                  aria-label="Eliminar bloque"
+                >
+                  <Trash2 aria-hidden />
                 </Button>
               </form>
             </>
@@ -147,7 +162,9 @@ export function FocusBlockItem({ block }: { block: FocusBlockView }) {
               <form action={distract}>
                 <input type="hidden" name="id" value={block.id} />
                 <Button type="submit" variant="outline" size="sm">
-                  Me distraje ({block.distractions})
+                  <Zap aria-hidden />
+                  Me distraje (
+                  <span className="numeric">{block.distractions}</span>)
                 </Button>
               </form>
 
@@ -158,10 +175,12 @@ export function FocusBlockItem({ block }: { block: FocusBlockView }) {
                   type="number"
                   min={0}
                   defaultValue={0}
-                  className="h-8 w-24"
+                  className="h-7 w-20"
                   aria-label="Minutos perdidos por interrupción"
+                  aria-describedby={`interrupt-hint-${block.id}`}
                 />
                 <Button type="submit" size="sm" disabled={stopping}>
+                  <Square aria-hidden />
                   {stopping ? "Cerrando…" : "Terminar"}
                 </Button>
               </form>
@@ -171,13 +190,16 @@ export function FocusBlockItem({ block }: { block: FocusBlockView }) {
       )}
 
       {running ? (
-        <p className="text-muted-foreground mt-2 text-xs">
+        <p
+          id={`interrupt-hint-${block.id}`}
+          className="text-muted-foreground max-w-prose text-xs text-pretty"
+        >
           El número junto a &quot;Terminar&quot; son los minutos que te robó una
           interrupción. Cero significa bloque protegido.
         </p>
       ) : null}
 
-      {error ? <p className="text-destructive mt-3 text-sm">{error}</p> : null}
+      <FormError>{error}</FormError>
     </li>
   );
 }

@@ -2,14 +2,31 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
-@custom-variant dark (&:is(.dark *));
+/*
+ * Tema. Tres estados:
+ *   - sin clase en <html>  → sigue al sistema
+ *   - .light               → claro forzado
+ *   - .dark                → oscuro forzado
+ * Los tokens usan light-dark(), así que una sola definición sirve para ambos
+ * temas: no hay dos bloques que se puedan desincronizar.
+ */
+@custom-variant dark {
+  @media (prefers-color-scheme: dark) {
+    &:where(:not(.light):not(.light *)) {
+      @slot;
+    }
+  }
+  &:where(.dark, .dark *) {
+    @slot;
+  }
+}
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-sans);
+  --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-  --font-heading: var(--font-sans);
+  --font-heading: var(--font-geist-sans);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -27,6 +44,11 @@
   --color-input: var(--input);
   --color-border: var(--border);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -49,82 +71,99 @@
 }
 
 :root {
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --radius: 0.625rem;
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  color-scheme: light dark;
+
+  /* ── Superficies ─────────────────────────────────────────────── */
+  --background: light-dark(oklch(0.98 0 0), oklch(0.155 0 0));
+  --foreground: light-dark(oklch(0.185 0 0), oklch(0.96 0 0));
+  --card: light-dark(oklch(1 0 0), oklch(0.205 0 0));
+  --card-foreground: var(--foreground);
+  --popover: var(--card);
+  --popover-foreground: var(--foreground);
+
+  /* ── Acción ──────────────────────────────────────────────────── */
+  --primary: light-dark(oklch(0.205 0 0), oklch(0.93 0 0));
+  --primary-foreground: light-dark(oklch(0.985 0 0), oklch(0.185 0 0));
+  --secondary: light-dark(oklch(0.955 0 0), oklch(0.27 0 0));
+  --secondary-foreground: var(--foreground);
+  --accent: var(--secondary);
+  --accent-foreground: var(--foreground);
+
+  /* ── Texto secundario y bordes ───────────────────────────────── */
+  --muted: light-dark(oklch(0.96 0 0), oklch(0.245 0 0));
+  --muted-foreground: light-dark(oklch(0.48 0 0), oklch(0.72 0 0));
+  --border: light-dark(oklch(0.9 0 0), oklch(1 0 0 / 12%));
+  --input: light-dark(oklch(0.87 0 0), oklch(1 0 0 / 16%));
+  --ring: light-dark(oklch(0.45 0 0), oklch(0.72 0 0));
+
+  /* ── Estado semántico ────────────────────────────────────────────
+   * Tres tonos y ninguno más. Verde = la métrica cumple su meta.
+   * Ámbar = zona de aviso. Rojo = incumplimiento o error. Nunca se
+   * usan por decoración: solo cuando el dato lo justifica.            */
+  --success: light-dark(oklch(0.5 0.1 155), oklch(0.78 0.12 158));
+  --success-foreground: light-dark(oklch(0.985 0 0), oklch(0.185 0 0));
+  --warning: light-dark(oklch(0.52 0.11 70), oklch(0.8 0.13 80));
+  --warning-foreground: light-dark(oklch(0.985 0 0), oklch(0.185 0 0));
+  --destructive: light-dark(oklch(0.52 0.21 27), oklch(0.72 0.17 22));
+  --destructive-foreground: light-dark(oklch(0.985 0 0), oklch(0.185 0 0));
+
+  /* ── Gráficos (escala neutra, sin color decorativo) ──────────── */
+  --chart-1: light-dark(oklch(0.87 0 0), oklch(0.35 0 0));
+  --chart-2: light-dark(oklch(0.72 0 0), oklch(0.48 0 0));
+  --chart-3: light-dark(oklch(0.56 0 0), oklch(0.62 0 0));
+  --chart-4: light-dark(oklch(0.4 0 0), oklch(0.76 0 0));
+  --chart-5: light-dark(oklch(0.26 0 0), oklch(0.9 0 0));
+
+  --radius: 0.5rem;
+
+  --sidebar: var(--card);
+  --sidebar-foreground: var(--foreground);
+  --sidebar-primary: var(--primary);
+  --sidebar-primary-foreground: var(--primary-foreground);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-foreground: var(--foreground);
+  --sidebar-border: var(--border);
+  --sidebar-ring: var(--ring);
+}
+
+/* Overrides explícitos del usuario. light-dark() lee color-scheme. */
+.light {
+  color-scheme: light;
 }
 
 .dark {
-  --background: oklch(0.145 0 0);
-  --foreground: oklch(0.985 0 0);
-  --card: oklch(0.205 0 0);
-  --card-foreground: oklch(0.985 0 0);
-  --popover: oklch(0.205 0 0);
-  --popover-foreground: oklch(0.985 0 0);
-  --primary: oklch(0.922 0 0);
-  --primary-foreground: oklch(0.205 0 0);
-  --secondary: oklch(0.269 0 0);
-  --secondary-foreground: oklch(0.985 0 0);
-  --muted: oklch(0.269 0 0);
-  --muted-foreground: oklch(0.708 0 0);
-  --accent: oklch(0.269 0 0);
-  --accent-foreground: oklch(0.985 0 0);
-  --destructive: oklch(0.704 0.191 22.216);
-  --border: oklch(1 0 0 / 10%);
-  --input: oklch(1 0 0 / 15%);
-  --ring: oklch(0.556 0 0);
-  --chart-1: oklch(0.87 0 0);
-  --chart-2: oklch(0.556 0 0);
-  --chart-3: oklch(0.439 0 0);
-  --chart-4: oklch(0.371 0 0);
-  --chart-5: oklch(0.269 0 0);
-  --sidebar: oklch(0.205 0 0);
-  --sidebar-foreground: oklch(0.985 0 0);
-  --sidebar-primary: oklch(0.488 0.243 264.376);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.269 0 0);
-  --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
+  color-scheme: dark;
 }
 
 @layer base {
   * {
-    @apply border-border outline-ring/50;
+    @apply border-border;
   }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground text-sm;
+    font-synthesis-weight: none;
+    text-rendering: optimizeLegibility;
   }
+
   html {
     @apply font-sans;
   }
+
+  /* Foco visible siempre, con el mismo anillo en toda la app. */
+  :focus-visible {
+    outline: 2px solid var(--ring);
+    outline-offset: 2px;
+  }
+
+  /* Cifras tabulares por defecto en todo lo que sea un número que se
+     compara o que cambia en el sitio (cronómetro, contadores, métricas). */
+  :where(input[type="number"], input[type="time"], time, output) {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@utility numeric {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
 }

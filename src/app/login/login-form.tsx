@@ -3,7 +3,7 @@
 import { useActionState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { Field } from "@/components/field";
 import { login, type LoginState } from "./actions";
 
 export function LoginForm() {
@@ -14,23 +14,19 @@ export function LoginForm() {
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <div className="flex flex-col gap-2">
-        <Label htmlFor="password">Contraseña</Label>
+      <Field htmlFor="password" label="Contraseña" error={state.error}>
         <Input
           id="password"
           name="password"
           type="password"
           autoComplete="current-password"
+          aria-invalid={state.error ? true : undefined}
           autoFocus
           required
         />
-      </div>
+      </Field>
 
-      {state.error ? (
-        <p className="text-sm text-destructive">{state.error}</p>
-      ) : null}
-
-      <Button type="submit" disabled={pending}>
+      <Button type="submit" disabled={pending} size="lg">
         {pending ? "Entrando…" : "Entrar"}
       </Button>
     </form>

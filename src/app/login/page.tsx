@@ -1,24 +1,20 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { LoginForm } from "./login-form";
 
 export default function LoginPage() {
   return (
-    <main className="flex min-h-svh items-center justify-center p-6">
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle>Ritmo</CardTitle>
-          <CardDescription>Seguimiento profesional</CardDescription>
-        </CardHeader>
-        <CardContent>
+    <main className="flex min-h-svh flex-col items-center justify-center p-6">
+      <div className="w-full max-w-xs">
+        <p className="font-heading text-sm font-semibold tracking-[0.14em] uppercase">
+          Ritmo
+        </p>
+        <p className="text-muted-foreground mt-1 text-sm">
+          Seguimiento profesional
+        </p>
+
+        <div className="bg-card ring-foreground/10 mt-6 rounded-xl p-5 ring-1">
           <LoginForm />
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </main>
   );
 }
