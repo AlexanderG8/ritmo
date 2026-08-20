@@ -18,6 +18,7 @@ export type ActionState = { error?: string; ok?: boolean };
 function refresh() {
   revalidatePath("/semana");
   revalidatePath("/semana/planificar");
+  revalidatePath("/hoy");
 }
 
 export async function createCommitmentAction(

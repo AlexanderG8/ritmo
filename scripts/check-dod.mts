@@ -1,16 +1,16 @@
 import "dotenv/config";
-import { prisma } from "./src/lib/prisma.js";
-import { ValidationError } from "./src/lib/errors.js";
+import { prisma } from "../src/lib/prisma";
+import { ValidationError } from "../src/lib/errors";
 import {
   changeStatus,
   completeCommitment,
   createCommitment,
   deleteCommitment,
   updateDocNotes,
-} from "./src/server/commitments.js";
-import { startWeek } from "./src/server/cycles.js";
-import { weekMetrics } from "./src/server/metrics.js";
-import { weekBounds } from "./src/lib/dates.js";
+} from "../src/server/commitments";
+import { startWeek } from "../src/server/cycles";
+import { weekMetrics } from "../src/server/metrics";
+import { weekBounds } from "../src/lib/dates";
 
 const results: [string, boolean, string?][] = [];
 const check = (name: string, ok: boolean, detail?: string) =>
@@ -93,7 +93,7 @@ check("no planificado contabilizado aparte", m.unplannedTotal === 1, `unplanned=
 check("deuda de documentación en cero", m.docDebt === 0);
 
 // Validación de entrada.
-const { commitmentInput } = await import("./src/server/commitments.js");
+const { commitmentInput } = await import("../src/server/commitments");
 check("título vago rechazado", commitmentInput.safeParse({ title: "x", category: "SOPORTE", priority: 2, requiresDoc: true }).success === false);
 check("categoría inválida rechazada", commitmentInput.safeParse({ title: "titulo valido", category: "OTRA", priority: 2, requiresDoc: true }).success === false);
 

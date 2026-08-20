@@ -16,12 +16,16 @@ import { formatDate, formatMinutes } from "@/lib/dates";
 import { cycleStatusLabel } from "@/lib/labels";
 import { getCurrentCycleWithCommitments } from "@/server/cycles";
 import { formatPercent, weekMetrics } from "@/server/metrics";
+import { minutesByCommitment } from "@/server/focus";
 
 export const dynamic = "force-dynamic";
 
 export default async function SemanaPage() {
   const { cycle, commitments } = await getCurrentCycleWithCommitments();
   const metrics = weekMetrics(cycle, commitments);
+  // Los minutos reales se derivan de los bloques de foco, no de una columna
+  // que habría que mantener sincronizada a mano.
+  const minutes = await minutesByCommitment(commitments.map((c) => c.id));
 
   const open = commitments.filter(
     (c) => c.status !== "DONE" && c.status !== "DROPPED",
@@ -110,7 +114,11 @@ export default async function SemanaPage() {
         ) : (
           <ul className="flex flex-col gap-3">
             {open.map((commitment) => (
-              <CommitmentItem key={commitment.id} commitment={commitment} />
+              <CommitmentItem
+                key={commitment.id}
+                commitment={commitment}
+                actualMinutes={minutes.get(commitment.id) ?? 0}
+              />
             ))}
           </ul>
         )}
@@ -121,7 +129,11 @@ export default async function SemanaPage() {
           <h2 className="text-lg font-medium">Cerrados ({closed.length})</h2>
           <ul className="flex flex-col gap-3">
             {closed.map((commitment) => (
-              <CommitmentItem key={commitment.id} commitment={commitment} />
+              <CommitmentItem
+                key={commitment.id}
+                commitment={commitment}
+                actualMinutes={minutes.get(commitment.id) ?? 0}
+              />
             ))}
           </ul>
         </section>

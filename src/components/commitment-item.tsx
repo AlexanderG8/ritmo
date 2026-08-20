@@ -19,9 +19,15 @@ import {
   deleteCommitmentAction,
   saveDocNotesAction,
   type ActionState,
-} from "@/app/semana/actions";
+} from "@/actions/commitments";
 
-export function CommitmentItem({ commitment }: { commitment: Commitment }) {
+export function CommitmentItem({
+  commitment,
+  actualMinutes,
+}: {
+  commitment: Commitment;
+  actualMinutes: number;
+}) {
   const [docNotes, setDocNotes] = useState(commitment.docNotes ?? "");
   const [open, setOpen] = useState(false);
 
@@ -65,7 +71,15 @@ export function CommitmentItem({ commitment }: { commitment: Commitment }) {
             {commitment.plannedMinutes ? (
               <>
                 <span>·</span>
-                <span>{formatMinutes(commitment.plannedMinutes)}</span>
+                <span>
+                  {formatMinutes(actualMinutes)} de{" "}
+                  {formatMinutes(commitment.plannedMinutes)}
+                </span>
+              </>
+            ) : actualMinutes > 0 ? (
+              <>
+                <span>·</span>
+                <span>{formatMinutes(actualMinutes)} reales</span>
               </>
             ) : null}
           </div>

@@ -10,7 +10,7 @@ import { categoryLabel, priorityLabel } from "@/lib/labels";
 import {
   createCommitmentAction,
   type ActionState,
-} from "@/app/semana/actions";
+} from "@/actions/commitments";
 
 export function CommitmentForm({
   cycleId,

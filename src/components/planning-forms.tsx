@@ -8,7 +8,7 @@ import {
   setCapacityAction,
   startWeekAction,
   type ActionState,
-} from "@/app/semana/actions";
+} from "@/actions/commitments";
 
 export function CapacityForm({
   cycleId,
