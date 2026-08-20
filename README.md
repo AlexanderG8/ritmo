@@ -1,87 +1,288 @@
+<div align="center">
+
 # Ritmo
 
-**Sistema personal de rendición de cuentas profesional.**
+### El gestor de tareas que no te deja mentirte
 
-> Forzar rendición de cuentas semanal cuando no hay jefe que la exija.
+**Ritmo no te ayuda a organizarte. Te obliga a rendir cuentas.**<br/>
+No puedes cerrar una tarea sin documentarla. No puedes disfrazar una interrupción<br/>
+de tarea planificada. No puedes borrar el arrastre reescribiendo la tarea.
 
-## Qué problema resuelve
+<br/>
 
-Un puesto cómodo, sin presión y sin nadie que pregunte "¿documentaste?" es una
-trampa: la disciplina se erosiona sin que nadie lo note, hasta que tres meses
-después alguien pregunta por qué no hay documentación de nada.
+[![Next.js](https://img.shields.io/badge/Next.js-16.3.1-000000?style=for-the-badge&logo=nextdotjs&logoColor=white)](https://nextjs.org)
+[![React](https://img.shields.io/badge/React-19-087EA4?style=for-the-badge&logo=react&logoColor=white)](https://react.dev)
+[![TypeScript](https://img.shields.io/badge/TypeScript-strict-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-v4-06B6D4?style=for-the-badge&logo=tailwindcss&logoColor=white)](https://tailwindcss.com)
 
-Ritmo **no es un gestor de tareas**. La diferencia es el *enforcement*: no te deja
-cerrar una tarea sin documentarla, distingue lo que no cumpliste de lo que te
-interrumpieron, y te enseña sin adornos el porcentaje de compromisos que
-incumpliste.
+[![Prisma](https://img.shields.io/badge/Prisma-7-2D3748?style=for-the-badge&logo=prisma&logoColor=white)](https://www.prisma.io)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?style=for-the-badge&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Zod](https://img.shields.io/badge/Zod-4-3E67B1?style=for-the-badge&logo=zod&logoColor=white)](https://zod.dev)
+[![Vercel](https://img.shields.io/badge/Deploy-Vercel-000000?style=for-the-badge&logo=vercel&logoColor=white)](https://vercel.com)
 
-## Cómo funciona
+<br/>
 
-| Cuándo | Qué |
-|---|---|
-| **Lunes**, 15 min | Declaras tu capacidad real y defines 3-5 compromisos concretos |
-| **Durante la semana** | Cronometras bloques de foco, cuentas distracciones, registras bloqueos |
-| **Cada día** | Registras energía, concentración y un logro obligatorio |
-| **Al cerrar una tarea** | Escribes la documentación — o la tarea no se cierra |
-| **Viernes** | Arrastras o descartas lo abierto, escribes la retro y cierras la semana |
+![Tests](https://img.shields.io/badge/comprobaciones-115%20en%20verde-2E7D32?style=flat-square)
+![Idioma](https://img.shields.io/badge/idioma-español-555?style=flat-square)
+![Uso](https://img.shields.io/badge/uso-personal%20·%20autoalojado-555?style=flat-square)
 
-Al iniciar la semana ocurre lo importante: **todo lo que entre después queda
-marcado automáticamente como no planificado**. Esa etiqueta no la eliges tú, así
-que una incidencia del miércoles no puede disfrazarse de tarea prevista el lunes.
+**[Empezar](#empezar-en-5-minutos)** · **[Cómo funciona](#el-ciclo-semanal)** · **[Las reglas](#las-cuatro-reglas-que-no-puedes-saltarte)** · **[Documentación](#documentación)**
 
-Y al cerrar el viernes, lo arrastrado **nace de nuevo en la semana siguiente
-apuntando a la tarea que no se hizo**: el arrastre no se borra reescribiendo la
-tarea.
+</div>
+
+---
+
+## El problema
+
+Un puesto cómodo, sin presión y sin nadie que pregunte *"¿documentaste?"* es una
+trampa silenciosa. La disciplina se erosiona sin que nadie lo note — hasta que
+tres meses después alguien pregunta por qué no hay documentación de nada, y ya es
+tarde.
+
+La mayoría de las apps de productividad empeoran ese problema: te dan la
+sensación de control sin exigirte nada. Marcas una casilla y sigues igual.
+
+## La diferencia
+
+|  | Un gestor de tareas | **Ritmo** |
+|---|---|---|
+| Cerrar una tarea | Un clic | **Imposible sin documentación** |
+| Trabajo imprevisto | Otra tarea más | **Etiquetado aparte, automáticamente** |
+| Lo que no hiciste | Se arrastra en silencio | **Queda contado y apuntando al original** |
+| Tu cumplimiento | No se mide | **Un porcentaje que no puedes discutir** |
+| Un cero sin datos | Verde, enhorabuena | **Gris: ausencia de información no es logro** |
+
+> Si una función te resulta incómoda, normalmente es porque está funcionando.
+
+---
+
+## El ciclo semanal
+
+```mermaid
+flowchart LR
+    P["LUNES · 15 min<br/>Declaras capacidad real<br/>Defines 3-5 compromisos"]
+    A["DURANTE LA SEMANA<br/>Bloques de foco cronometrados<br/>Documentar para poder cerrar"]
+    R["VIERNES<br/>Arrastras o descartas<br/>Escribes la retro"]
+
+    P -->|"iniciar la semana"| A
+    A --> R
+    R -->|"lo no hecho nace de nuevo"| P
+```
+
+Al pulsar **iniciar la semana** ocurre lo importante: todo lo que entre a partir
+de ese momento queda marcado como **no planificado**. Esa etiqueta no la eliges
+tú — la decide el estado del ciclo. Una incidencia del miércoles no puede
+disfrazarse de tarea prevista el lunes.
+
+Al **cerrar el viernes**, lo que arrastras nace de nuevo en la semana siguiente
+apuntando a la tarea que no se hizo. El arrastre no se borra reescribiendo la
+tarea: ese es exactamente el punto.
+
+---
+
+## Las cuatro reglas que no puedes saltarte
+
+**1. Una tarea no está hecha hasta que está documentada.**
+Si el compromiso exige documentación y no hay ni notas ni un documento vinculado,
+la app se niega a cerrarlo. No es un aviso: es un error. Y "Hecho" no aparece en
+el desplegable de estados — solo se alcanza por el botón que valida.
+
+**2. El calendario decide qué fue planificado, no tú.**
+Mientras la semana está en planificación, lo que agregas cuenta como planificado.
+En cuanto arranca, todo lo nuevo se marca como no planificado. Sin excepciones,
+sin editarlo después.
+
+**3. Lo abierto se arrastra o se descarta. No hay tercera opción.**
+El viernes cada tarea sin cerrar exige una decisión. Dejarla flotando es lo que
+hacías antes de tener la app.
+
+**4. Un documento no puede dejar huérfano a un compromiso cerrado.**
+Si es la única prueba de una tarea cerrada, no se puede desvincular ni borrar.
+Sin esto, la regla 1 se vaciaría por la puerta de atrás.
+
+---
+
+## Las pantallas
+
+<!--
+  Para añadir capturas: guárdalas en docs/img/ y descomenta las líneas de imagen
+  bajo cada pantalla. Recomendado: 1440px de ancho, tema oscuro y claro.
+-->
+
+<details open>
+<summary><b>Hoy</b> — dónde se va realmente tu tiempo</summary>
+<br/>
+
+Bloques de foco con **cronómetro real**, contador de distracciones y cierre del
+día.
+
+- **Un solo bloque puede correr a la vez.** Dos cronómetros simultáneos son la
+  dispersión que la herramienta combate.
+- Las distracciones solo se cuentan **mientras el bloque corre**. Contarlas al
+  final del día es inventarlas.
+- Al terminar, la app no pregunta *"¿estuvo protegido?"* sino **cuántos minutos te
+  robó una interrupción**. Lo primero invita a mentirse; lo segundo no tanto.
+- El cierre del día pide energía, concentración y **un logro obligatorio**. Un día
+  sin ningún logro registrado casi nunca es un día sin logros: es un día que no
+  miraste.
+
+</details>
+
+<details>
+<summary><b>Semana</b> — el auto-Scrum de quien trabaja solo</summary>
+<br/>
+
+Los dos rituales y todo lo que pasa entre ellos.
+
+- **Lunes (15 min):** declaras tu capacidad *real* —descontando soporte,
+  reuniones e interrupciones— y defines 3-5 compromisos concretos.
+- **Durante:** registras el trabajo no planificado que entra, documentas y
+  cierras, y anotas los **bloqueos** cuando ocurren, no el viernes de memoria.
+- **Viernes:** la retro. Arrastras o descartas, escribes qué salió bien y qué hay
+  que mejorar, y la semana se cierra en una sola transacción.
+
+</details>
+
+<details>
+<summary><b>Documentos</b> — para que tu trabajo exista fuera de tu cabeza</summary>
+<br/>
+
+Editor Markdown con vista previa, búsqueda por título, módulo, contenido o
+etiquetas, y cinco tipos: Feature, Proceso, Incidente, Reporte y Decisión.
+
+- **Relación N:M con los compromisos.** Un incidente genera varios documentos; un
+  documento de proceso cubre varias tareas.
+- **Exportación a `.md`**, un documento o todos. Tu documentación no puede quedar
+  secuestrada dentro de un proyecto personal: si mañana abandonas Ritmo, tiene que
+  sobrevivir en archivos.
+- La exportación completa incluye **también las notas que aún no ascendiste** a
+  documento. Si no, la promesa de "puede salir de la app" sería falsa.
+
+</details>
+
+<details>
+<summary><b>Métricas</b> — doce semanas, sin adornos</summary>
+<br/>
+
+Racha, cumplimiento medio, trabajo no planificado y arrastre acumulado, más cinco
+gráficos de tendencia y la distribución real de tu tiempo por categoría.
+
+- **Cada gráfico trae su tabla.** Ningún valor queda accesible solo por el color.
+- **Con menos de dos semanas no se dibuja nada.** Un gráfico de una barra no es
+  una tendencia, es un número disfrazado.
+- **La racha ignora la semana en curso**: todavía puede caerse.
+
+</details>
+
+---
 
 ## Las métricas que importan
 
 | Métrica | Meta | Qué te dice |
-|---|---|---|
-| **Cumplimiento** (solo sobre lo planificado) | ≥ 80% | Si la semana valió |
-| **Trabajo no planificado** | conocerlo | Si el problema es tu disciplina o la carga de soporte |
-| **Arrastre** | ≤ 1 por semana | Si te sobre-comprometes o simplemente no cumples |
+|---|:---:|---|
+| **Cumplimiento** — solo sobre lo planificado | ≥ 80% | Si la semana valió |
+| **Trabajo no planificado** | conocerlo | Si el problema es tu disciplina o tu carga de soporte |
+| **Arrastre** | ≤ 1/semana | Si te sobre-comprometes o simplemente no cumples |
 | **Compromiso vs capacidad** | 70-90% | Que cumplir el 100% de casi nada no cuente como cumplir |
 | **Deuda de documentación** | 0 | Por diseño debería ser imposible que no lo sea |
 
-## Pantallas
+Las dos que de verdad deciden: **arrastre** te dice *cuál* de los dos problemas
+tienes, y **trabajo no planificado** es el único dato con el que puedes defender
+tu tiempo ante tu empresa.
 
-- **Hoy** — bloques de foco con cronómetro, contador de distracciones, cierre del día
-- **Semana** — compromisos, métricas, bloqueos, y los rituales de lunes y viernes
-- **Documentos** — editor Markdown, vinculación N:M con compromisos, exportación a `.md`
-- **Métricas** — doce semanas de tendencias y distribución real del tiempo
+---
 
-## Stack
+## Empezar en 5 minutos
 
-Next.js 16 (App Router, Server Actions) · React 19 · TypeScript strict ·
-Tailwind CSS v4 · shadcn/ui · Prisma 7 · Neon (PostgreSQL 18) · Zod · Recharts
+**Necesitas** una base de datos [Neon](https://neon.tech) (capa gratuita) y
+Node.js. Desarrollado con Node.js 24 y npm 11.
 
-Detalle completo, con versiones y motivos, en
-[`docs/UML-ACHITEC-TEC.md`](docs/UML-ACHITEC-TEC.md).
-
-## Puesta en marcha
-
-Desarrollado con Node.js 24 y npm 11. Requiere una base de datos Neon.
+**1. Clona e instala**
 
 ```bash
-npm install
+git clone https://github.com/<tu-usuario>/ritmo.git && cd ritmo && npm install
 ```
 
-Copia `.env.example` a `.env` y rellena las cuatro variables: `DATABASE_URL`
-(pooled), `DIRECT_URL` (directa), `APP_PASSWORD` y `AUTH_SECRET`. Después:
+**2. Configura el entorno**
+
+Copia `.env.example` a `.env` y rellena las cuatro variables:
+
+| Variable | Qué es |
+|---|---|
+| `DATABASE_URL` | Cadena **pooled** de Neon (el host lleva `-pooler`) |
+| `DIRECT_URL` | Cadena **directa** (el mismo host sin `-pooler`) |
+| `APP_PASSWORD` | La contraseña con la que entrarás |
+| `AUTH_SECRET` | Secreto para firmar la sesión |
+
+> Usar la cadena *pooled* para migraciones es el error número uno al empezar con
+> Neon. Por eso son dos variables distintas.
+
+Genera el secreto con:
+
+```bash
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
+
+**3. Crea las tablas**
 
 ```bash
 npm run db:migrate
 ```
 
+**4. Arranca**
+
 ```bash
 npm run dev
 ```
 
-La aplicación queda en `http://localhost:3000`, detrás de la contraseña que
-definiste. Los pasos completos, incluido el despliegue en Vercel, están en
-[`docs/SETUP.md`](docs/SETUP.md).
+Abre `http://localhost:3000` y entra con tu contraseña. El despliegue en Vercel
+está paso a paso en **[docs/SETUP.md](docs/SETUP.md)**.
 
-## Comandos
+---
+
+## Cómo está construido
+
+| Capa | Tecnología |
+|---|---|
+| **Framework** | Next.js 16 · App Router · Server Actions · React 19 |
+| **Lenguaje** | TypeScript en modo `strict` |
+| **Interfaz** | Tailwind CSS v4 · shadcn/ui · Radix · Recharts · lucide |
+| **Datos** | Prisma 7 · Neon (PostgreSQL 18) · Zod |
+| **Auth** | Cookie firmada con HMAC-SHA256, sin sesiones en base de datos |
+| **Despliegue** | Vercel + Neon, ambos en capa gratuita |
+
+La arquitectura es de cuatro capas y el flujo de escritura siempre es el mismo:
+**formulario → Server Action → servicio → Prisma**. Las reglas de negocio viven
+en `src/server` y cada una tiene **un único punto de entrada**, para que no se
+puedan saltar desde otro sitio.
+
+Diagrama ER, cardinalidades y decisiones de modelado en
+**[docs/UML-ACHITEC-TEC.md](docs/UML-ACHITEC-TEC.md)**.
+
+---
+
+## Calidad
+
+Cinco suites que se ejecutan **contra PostgreSQL real** — siembran sus datos y los
+borran al terminar. No hay mocks: lo que interesa comprobar son las reglas y las
+transacciones.
+
+```bash
+npm run check:dod     # 17 · la regla de documentación y el ciclo semanal
+npm run check:fase2   # 23 · bloques de foco, zona horaria, registro diario
+npm run check:fase3   # 25 · documentos, vinculación N:M, exportación
+npm run check:fase4   # 22 · métricas agregadas, racha, historial
+npm run check:fase5   # 28 · retro, cierre transaccional, arrastre, bloqueos
+```
+
+**115 comprobaciones en verde.** Cubren lo que más fácilmente miente en una app
+así: que el trabajo no planificado no contamine el cumplimiento, que los bloques
+de una semana no se cuelen en otra, que la racha se corte donde debe, y que no
+exista ningún segundo camino hacia "Hecho".
+
+<details>
+<summary>Otros comandos</summary>
+<br/>
 
 | Comando | Qué hace |
 |---|---|
@@ -92,29 +293,46 @@ definiste. Los pasos completos, incluido el despliegue en Vercel, están en
 | `npm run db:migrate` | Crea y aplica una migración |
 | `npm run db:deploy` | Aplica migraciones en producción |
 | `npm run db:studio` | Prisma Studio |
-| `npm run check:dod` | Verifica la regla de documentación y el ciclo semanal |
-| `npm run check:fase2` | Bloques de foco, zona horaria y registro diario |
-| `npm run check:fase3` | Documentos, vinculación y exportación |
-| `npm run check:fase4` | Métricas agregadas e historial |
-| `npm run check:fase5` | Retro, cierre de ciclo y arrastre |
 
-Las cinco suites suman **115 comprobaciones** y se ejecutan contra la base de
-datos real: siembran sus datos y los borran al terminar.
+</details>
+
+---
 
 ## Documentación
 
 | Documento | Contenido |
 |---|---|
-| [`docs/Ejemplos de Uso.md`](docs/Ejemplos%20de%20Uso.md) | Qué hace y **por qué** cada función de cada pantalla |
-| [`docs/UML-ACHITEC-TEC.md`](docs/UML-ACHITEC-TEC.md) | UML de la base de datos, arquitectura y tecnologías |
-| [`docs/PLAN.md`](docs/PLAN.md) | El plan por fases y la fórmula de cada métrica |
-| [`docs/DESIGN.md`](docs/DESIGN.md) | Sistema de diseño |
-| [`docs/SETUP.md`](docs/SETUP.md) | Puesta en marcha y despliegue |
+| **[Ejemplos de Uso](docs/Ejemplos%20de%20Uso.md)** | Qué hace y **por qué** cada función de cada pantalla |
+| **[UML, arquitectura y tecnologías](docs/UML-ACHITEC-TEC.md)** | Diagrama ER, capas, versiones exactas |
+| **[Plan](docs/PLAN.md)** | Las fases del proyecto y la fórmula de cada métrica |
+| **[Diseño](docs/DESIGN.md)** | Tokens, tipografía y patrones de componente |
+| **[Setup](docs/SETUP.md)** | Puesta en marcha y despliegue |
 
-## Una advertencia que forma parte del proyecto
+---
 
-Construir una app de productividad es la forma más elegante de procrastinar. Por
-eso el plan se diseñó en fases donde la primera ya era usable en una semana, y
-por eso la condición sigue en pie: **la herramienta refuerza el hábito, no lo
-crea**. Si la semana no se cierra el viernes con su retro, esto es un proyecto
-bonito en lugar de una herramienta.
+## Antes de que lo instales
+
+Conviene ser honesto sobre qué es esto:
+
+- **Es una herramienta de un solo usuario.** No hay registro, ni equipos, ni
+  roles: una contraseña y tú. Está pensada para autoalojarse.
+- **Está en español**, y su tono es deliberadamente severo. No celebra, no
+  gamifica, no te felicita por un cero.
+- **Nació de un caso real**: alguien dando soporte de un ERP, desarrollando una
+  app interna en solitario y haciendo de Product Owner, Scrum Master y equipo a la
+  vez. Si te reconoces, encajará. Si trabajas en un equipo con procesos, no.
+
+---
+
+<div align="center">
+
+### Una advertencia que forma parte del proyecto
+
+Construir una app de productividad es la forma más elegante de procrastinar.<br/>
+Por eso la primera versión ya era usable en una semana.
+
+**La herramienta refuerza el hábito; no lo crea.**<br/>
+Si la semana no se cierra el viernes con su retro,<br/>
+esto es un proyecto bonito en lugar de una herramienta.
+
+</div>
