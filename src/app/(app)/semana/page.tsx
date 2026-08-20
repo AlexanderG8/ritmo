@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, Inbox } from "lucide-react";
+import { CalendarClock, History, Inbox } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -58,9 +58,17 @@ export default async function SemanaPage() {
             : "Sin capacidad declarada"
         }
         aside={
-          <Badge variant={cycle.status === "ACTIVE" ? "secondary" : "outline"}>
-            {cycleStatusLabel[cycle.status]}
-          </Badge>
+          <div className="flex items-center gap-2">
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/semana/historial">
+                <History aria-hidden className="size-4" />
+                Historial
+              </Link>
+            </Button>
+            <Badge variant={cycle.status === "ACTIVE" ? "secondary" : "outline"}>
+              {cycleStatusLabel[cycle.status]}
+            </Badge>
+          </div>
         }
       />
 
