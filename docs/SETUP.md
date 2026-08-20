@@ -46,8 +46,16 @@ npm run dev
 1. Sube el repo a GitHub (`git remote add origin …` && `git push -u origin main`).
 2. En <https://vercel.com/new> importa el repositorio.
 3. Añade las **cuatro** variables de entorno en Vercel: `DATABASE_URL`,
-   `DIRECT_URL`, `APP_PASSWORD`, `AUTH_SECRET`.
+   `DIRECT_URL`, `APP_PASSWORD`, `AUTH_SECRET`. Márcalas para los tres entornos
+   (Production, Preview y Development).
 4. Deploy.
+
+> **Las variables tienen que existir antes del primer build, no solo en
+> ejecución.** `src/generated` no se versiona, así que el `postinstall` del
+> proyecto ejecuta `prisma generate` durante la instalación; y `prisma.config.ts`
+> resuelve `env("DIRECT_URL")` al cargarse. Sin `DIRECT_URL` el build falla con
+> `PrismaConfigEnvError: Cannot resolve environment variable: DIRECT_URL`, antes
+> incluso de compilar Next.
 
 **Criterio de salida de la Fase 0:** el deploy está vivo, pide contraseña, y
 `/api/health` responde `{"ok":true,"db":"up"}` en producción. Hasta que eso ocurra,
