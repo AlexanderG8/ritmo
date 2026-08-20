@@ -131,7 +131,7 @@ cumplir. Sin esa métrica, el sistema premia la cobardía.
 | **2** — Bloques y diario ✅ | `FocusBlock` + `DailyLog` + `/hoy` con timer, contador de distracciones, win diario | Una semana registrando bloques |
 | **3** — Documentación real ✅ | `Document`, editor markdown, N:N, ascenso de `docNotes`, **export a markdown** | La documentación puede salir de la app en archivos |
 | **4** — Métricas | Dashboard Recharts, agregados, historial | Las 3 métricas clave visibles |
-| **5** — Pulido | Retro del viernes, notificaciones, lo que sobre | — |
+| **5** — Pulido ✅ | Retro del viernes, bloqueos, arrastre automático | El ciclo semanal se cierra solo y arrastra a la semana siguiente |
 
 ---
 

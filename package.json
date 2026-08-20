@@ -15,7 +15,8 @@
     "check:dod": "tsx scripts/check-dod.mts",
     "check:fase2": "tsx scripts/check-fase2.mts",
     "check:fase3": "tsx scripts/check-fase3.mts",
-    "check:fase4": "tsx scripts/check-fase4.mts"
+    "check:fase4": "tsx scripts/check-fase4.mts",
+    "check:fase5": "tsx scripts/check-fase5.mts"
   },
   "dependencies": {
     "@prisma/adapter-neon": "^7.9.1",

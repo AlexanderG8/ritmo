@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { CalendarClock, History, Inbox } from "lucide-react";
+import { CalendarClock, CalendarCheck, History, Inbox } from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { CommitmentForm } from "@/components/commitment-form";
+import { Blockers } from "@/components/blockers";
 import { CommitmentItem } from "@/components/commitment-item";
 import { EmptyState } from "@/components/empty-state";
 import { Metric } from "@/components/metric";
@@ -21,6 +22,7 @@ import { cycleStatusLabel } from "@/lib/labels";
 import { getCurrentCycleWithCommitments } from "@/server/cycles";
 import { formatPercent, weekMetrics } from "@/server/metrics";
 import { minutesByCommitment } from "@/server/focus";
+import { listBlockers } from "@/server/blockers";
 
 export const dynamic = "force-dynamic";
 
@@ -30,6 +32,7 @@ export default async function SemanaPage() {
   // Los minutos reales se derivan de los bloques de foco, no de una columna
   // que habría que mantener sincronizada a mano.
   const minutes = await minutesByCommitment(commitments.map((c) => c.id));
+  const blockers = await listBlockers(cycle.id);
 
   const open = commitments.filter(
     (c) => c.status !== "DONE" && c.status !== "DROPPED",
@@ -59,13 +62,23 @@ export default async function SemanaPage() {
         }
         aside={
           <div className="flex items-center gap-2">
+            {cycle.status === "ACTIVE" ? (
+              <Button asChild variant="secondary" size="sm">
+                <Link href="/semana/retro">
+                  <CalendarCheck aria-hidden className="size-4" />
+                  Cerrar semana
+                </Link>
+              </Button>
+            ) : null}
             <Button asChild variant="ghost" size="sm">
               <Link href="/semana/historial">
                 <History aria-hidden className="size-4" />
                 Historial
               </Link>
             </Button>
-            <Badge variant={cycle.status === "ACTIVE" ? "secondary" : "outline"}>
+            <Badge
+              variant={cycle.status === "ACTIVE" ? "secondary" : "outline"}
+            >
               {cycleStatusLabel[cycle.status]}
             </Badge>
           </div>
@@ -84,6 +97,20 @@ export default async function SemanaPage() {
             </span>
             <Button asChild size="sm">
               <Link href="/semana/planificar">Ir a planificar</Link>
+            </Button>
+          </AlertDescription>
+        </Alert>
+      ) : cycle.status === "CLOSED" ? (
+        <Alert>
+          <CalendarCheck />
+          <AlertTitle>Esta semana ya está cerrada</AlertTitle>
+          <AlertDescription className="flex flex-col items-start gap-3">
+            <span className="max-w-prose">
+              Ya no se puede tocar: el número quedó puesto. Lo que arrastraste
+              te espera en la semana siguiente, que empieza el lunes.
+            </span>
+            <Button asChild size="sm" variant="secondary">
+              <Link href="/semana/retro">Ver la retro</Link>
             </Button>
           </AlertDescription>
         </Alert>
@@ -150,9 +177,7 @@ export default async function SemanaPage() {
             label="Deuda de documentación"
             value={String(metrics.docDebt)}
             hint="Debe ser 0 siempre"
-            tone={
-              !hasData ? "neutral" : metrics.docDebt === 0 ? "good" : "bad"
-            }
+            tone={!hasData ? "neutral" : metrics.docDebt === 0 ? "good" : "bad"}
           />
         </div>
       </Section>
@@ -173,7 +198,9 @@ export default async function SemanaPage() {
                     key={commitment.id}
                     commitment={commitment}
                     actualMinutes={minutes.get(commitment.id) ?? 0}
-                documents={commitment.documents.map((link) => link.document)}
+                    documents={commitment.documents.map(
+                      (link) => link.document,
+                    )}
                   />
                 ))}
               </ul>
@@ -189,7 +216,9 @@ export default async function SemanaPage() {
                     key={commitment.id}
                     commitment={commitment}
                     actualMinutes={minutes.get(commitment.id) ?? 0}
-                documents={commitment.documents.map((link) => link.document)}
+                    documents={commitment.documents.map(
+                      (link) => link.document,
+                    )}
                   />
                 ))}
               </ul>
@@ -197,26 +226,54 @@ export default async function SemanaPage() {
           ) : null}
         </div>
 
-        <Card className="xl:sticky xl:top-20">
-          <CardHeader>
-            <CardTitle>
-              {cycle.status === "PLANNING"
-                ? "Agregar compromiso"
-                : "Registrar trabajo no planificado"}
-            </CardTitle>
-            <CardDescription>
-              {cycle.status === "PLANNING"
-                ? "Concreto y verificable. 3 a 5 por semana, no quince."
-                : "La semana ya arrancó: esto se registra como no planificado, y así debe ser."}
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <CommitmentForm
-              cycleId={cycle.id}
-              unplanned={cycle.status !== "PLANNING"}
-            />
-          </CardContent>
-        </Card>
+        <div className="flex min-w-0 flex-col gap-3 xl:sticky xl:top-20">
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {cycle.status === "PLANNING"
+                  ? "Agregar compromiso"
+                  : "Registrar trabajo no planificado"}
+              </CardTitle>
+              <CardDescription>
+                {cycle.status === "PLANNING"
+                  ? "Concreto y verificable. 3 a 5 por semana, no quince."
+                  : "La semana ya arrancó: esto se registra como no planificado, y así debe ser."}
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <CommitmentForm
+                cycleId={cycle.id}
+                unplanned={cycle.status !== "PLANNING"}
+              />
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <CardTitle>Bloqueos</CardTitle>
+              <CardDescription>
+                La tercera pregunta del auto-Scrum: qué te frenó. Anótalo cuando
+                pasa, no el viernes de memoria.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <Blockers
+                cycleId={cycle.id}
+                blockers={blockers.map((blocker) => ({
+                  id: blocker.id,
+                  description: blocker.description,
+                  resolved: blocker.resolved,
+                  commitmentTitle: blocker.commitment?.title ?? null,
+                }))}
+                commitments={open.map((commitment) => ({
+                  id: commitment.id,
+                  title: commitment.title,
+                }))}
+                readOnly={cycle.status === "CLOSED"}
+              />
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

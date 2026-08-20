@@ -130,7 +130,7 @@ check("ordenada de mayor a menor", dist.every((r, i) => i === 0 || dist[i - 1].m
 // Historial: solo semanas anteriores a la actual.
 const past = await pastCycles();
 const currentWeekStart = weekBounds(new Date()).weekStart;
-check("el historial excluye la semana en curso", past.every(({ cycle }) => cycle.weekStart < currentWeekStart));
+check("el historial excluye la semana en curso si sigue abierta", past.every(({ cycle }) => cycle.weekStart < currentWeekStart || cycle.status === "CLOSED"));
 check("el historial incluye las de prueba", cycleIds.every((id) => past.some(({ cycle }) => cycle.id === id)));
 
 // Limpieza.

@@ -126,12 +126,18 @@ export async function categoryDistribution(from: Date, to: Date) {
     .sort((a, b) => b.minutes - a.minutes);
 }
 
-/** Ciclos anteriores al actual, del más reciente al más antiguo. */
+/**
+ * Semanas terminadas, de la más reciente a la más antigua. Una semana cerrada
+ * el viernes ya está terminada aunque siga siendo la semana en curso: si solo
+ * mirase la fecha, cerrar la semana te dejaría frente a un historial vacío.
+ */
 export async function pastCycles(limit = 26) {
   const currentWeekStart = weekBounds(todayInLima()).weekStart;
 
   const cycles = await prisma.weeklyCycle.findMany({
-    where: { weekStart: { lt: currentWeekStart } },
+    where: {
+      OR: [{ weekStart: { lt: currentWeekStart } }, { status: "CLOSED" }],
+    },
     orderBy: { weekStart: "desc" },
     take: limit,
     include: {
