@@ -1,5 +1,7 @@
 "use client";
 
+import Link from "next/link";
+
 import { useActionState, useState } from "react";
 import { Check, FileText, Trash2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
@@ -8,6 +10,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select } from "@/components/field";
 import { cn } from "@/lib/utils";
 import { FormError } from "@/components/form-message";
+import { PromoteDocNotes } from "@/components/promote-doc-notes";
 import { formatMinutes } from "@/lib/dates";
 import {
   categoryLabel,
@@ -41,9 +44,11 @@ const statusTone: Record<
 export function CommitmentItem({
   commitment,
   actualMinutes,
+  documents,
 }: {
   commitment: Commitment;
   actualMinutes: number;
+  documents: { id: string; title: string }[];
 }) {
   const [docNotes, setDocNotes] = useState(commitment.docNotes ?? "");
   const [open, setOpen] = useState(false);
@@ -66,7 +71,9 @@ export function CommitmentItem({
   );
 
   const isDone = commitment.status === "DONE";
-  const documented = docNotes.trim().length > 0;
+  // Desde la Fase 3 hay dos formas válidas de estar documentado: las notas
+  // embebidas o un documento vinculado. La regla acepta ambas.
+  const documented = docNotes.trim().length > 0 || documents.length > 0;
   const error =
     doneState.error ?? docState.error ?? statusState.error ?? deleteState.error;
 
@@ -198,6 +205,29 @@ export function CommitmentItem({
             {savingDocs ? "Guardando…" : "Guardar documentación"}
           </Button>
         </form>
+      ) : null}
+
+      {documents.length > 0 ? (
+        <ul className="flex flex-wrap items-center gap-x-3 gap-y-1">
+          {documents.map((document) => (
+            <li key={document.id}>
+              <Link
+                href={`/docs/${document.id}`}
+                className="text-muted-foreground hover:text-foreground flex items-center gap-1.5 text-xs underline-offset-2 hover:underline"
+              >
+                <FileText aria-hidden className="size-3.5" />
+                {document.title}
+              </Link>
+            </li>
+          ))}
+        </ul>
+      ) : null}
+
+      {commitment.docNotes?.trim() ? (
+        <PromoteDocNotes
+          commitmentId={commitment.id}
+          defaultTitle={commitment.title}
+        />
       ) : null}
 
       {isDone && commitment.docNotes ? (

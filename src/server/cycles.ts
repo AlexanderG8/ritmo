@@ -22,6 +22,11 @@ export async function getCurrentCycleWithCommitments() {
   const commitments = await prisma.commitment.findMany({
     where: { cycleId: cycle.id },
     orderBy: [{ priority: "asc" }, { createdAt: "asc" }],
+    include: {
+      documents: {
+        select: { document: { select: { id: true, title: true } } },
+      },
+    },
   });
 
   return { cycle, commitments };

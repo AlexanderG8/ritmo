@@ -126,10 +126,10 @@ cumplir. Sin esa métrica, el sistema premia la cobardía.
 
 | Fase | Contenido | Criterio de salida |
 |---|---|---|
-| **0** — Setup (~2h) | `create-next-app` TS+Tailwind → proyecto Neon → Prisma init con driver adapter → shadcn init → **middleware de auth** → deploy | Hay un deploy vivo y protegido con password. Sin esto no se pasa a Fase 1 |
-| **1** — Núcleo utilizable (~1 sem) | `WeeklyCycle` + `Commitment` con CRUD, `wasPlanned`, `docNotes`, **`completeCommitment()` con el DoD activo**, `/semana` y `/semana/planificar` | Un ciclo semanal real completado con la app. No se construye nada más hasta que eso ocurra |
-| **2** — Bloques y diario | `FocusBlock` + `DailyLog` + `/hoy` con timer, contador de distracciones, win diario | Una semana registrando bloques |
-| **3** — Documentación real | `Document`, editor markdown, N:N, migración de `docNotes`, **export a markdown** | La documentación puede salir de la app en archivos |
+| **0** — Setup ✅ | `create-next-app` TS+Tailwind → proyecto Neon → Prisma init con driver adapter → shadcn init → **middleware de auth** → deploy | Hay un deploy vivo y protegido con password. Sin esto no se pasa a Fase 1 |
+| **1** — Núcleo utilizable ✅ | `WeeklyCycle` + `Commitment` con CRUD, `wasPlanned`, `docNotes`, **`completeCommitment()` con el DoD activo**, `/semana` y `/semana/planificar` | Un ciclo semanal real completado con la app. No se construye nada más hasta que eso ocurra |
+| **2** — Bloques y diario ✅ | `FocusBlock` + `DailyLog` + `/hoy` con timer, contador de distracciones, win diario | Una semana registrando bloques |
+| **3** — Documentación real ✅ | `Document`, editor markdown, N:N, ascenso de `docNotes`, **export a markdown** | La documentación puede salir de la app en archivos |
 | **4** — Métricas | Dashboard Recharts, agregados, historial | Las 3 métricas clave visibles |
 | **5** — Pulido | Retro del viernes, notificaciones, lo que sobre | — |
 

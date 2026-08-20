@@ -1,6 +1,7 @@
 import type {
   CommitmentStatus,
   CycleStatus,
+  DocType,
   WorkCategory,
 } from "@/generated/prisma/enums";
 
@@ -42,3 +43,11 @@ export const manualStatuses: CommitmentStatus[] = [
   "CARRIED_OVER",
   "DROPPED",
 ];
+
+export const docTypeLabel: Record<DocType, string> = {
+  FEATURE: "Feature",
+  PROCESO: "Proceso",
+  INCIDENTE: "Incidente",
+  REPORTE: "Reporte",
+  DECISION: "Decisión",
+};

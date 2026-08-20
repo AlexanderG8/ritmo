@@ -165,6 +165,7 @@ export default async function SemanaPage() {
                     key={commitment.id}
                     commitment={commitment}
                     actualMinutes={minutes.get(commitment.id) ?? 0}
+                documents={commitment.documents.map((link) => link.document)}
                   />
                 ))}
               </ul>
@@ -180,6 +181,7 @@ export default async function SemanaPage() {
                     key={commitment.id}
                     commitment={commitment}
                     actualMinutes={minutes.get(commitment.id) ?? 0}
+                documents={commitment.documents.map((link) => link.document)}
                   />
                 ))}
               </ul>

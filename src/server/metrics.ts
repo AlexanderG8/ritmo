@@ -1,5 +1,14 @@
 import type { Commitment, WeeklyCycle } from "@/generated/prisma/client";
 
+/**
+ * Desde la Fase 3 un compromiso puede estar documentado de dos formas: por las
+ * notas embebidas (Fase 1) o por un Document vinculado. `documents` es opcional
+ * solo para no romper llamadas antiguas; la app siempre lo pasa.
+ */
+export type CommitmentWithDocs = Commitment & {
+  documents?: unknown[];
+};
+
 export type WeekMetrics = {
   plannedTotal: number;
   plannedDone: number;
@@ -15,7 +24,7 @@ export type WeekMetrics = {
 
 export function weekMetrics(
   cycle: WeeklyCycle,
-  commitments: Commitment[],
+  commitments: CommitmentWithDocs[],
 ): WeekMetrics {
   const active = commitments.filter((c) => c.status !== "DROPPED");
 
@@ -31,7 +40,11 @@ export function weekMetrics(
   // Deuda de documentación: debería ser siempre 0 porque la regla lo impide.
   // Si algún día no lo es, es que alguien encontró un segundo camino a DONE.
   const docDebt = active.filter(
-    (c) => c.status === "DONE" && c.requiresDoc && !c.docNotes?.trim(),
+    (c) =>
+      c.status === "DONE" &&
+      c.requiresDoc &&
+      !c.docNotes?.trim() &&
+      (c.documents?.length ?? 0) === 0,
   ).length;
 
   return {

@@ -2,13 +2,14 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { CalendarRange, Timer } from "lucide-react";
+import { CalendarRange, FileText, Timer } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const links: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/hoy", label: "Hoy", icon: Timer },
   { href: "/semana", label: "Semana", icon: CalendarRange },
+  { href: "/docs", label: "Documentos", icon: FileText },
 ];
 
 export function AppNav() {
