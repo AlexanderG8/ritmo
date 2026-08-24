@@ -20,6 +20,7 @@ import { formatDate } from "@/lib/dates";
 import { docTypeLabel } from "@/lib/labels";
 import { getCurrentCycleWithCommitments } from "@/server/cycles";
 import { getDocument } from "@/server/documents";
+import { assignableProjects } from "@/server/projects";
 
 export const dynamic = "force-dynamic";
 
@@ -35,6 +36,8 @@ export default async function DocumentoPage({
 
   const document = await getDocument(id);
   if (!document) notFound();
+
+  const projects = await assignableProjects();
 
   const editing = editar === "1";
   const linked = document.commitments.map((link) => link.commitment);
@@ -93,11 +96,13 @@ export default async function DocumentoPage({
       <Section>
         {editing ? (
           <DocumentForm
+            projects={projects}
             document={{
               id: document.id,
               title: document.title,
               type: document.type,
               module: document.module,
+              projectId: document.projectId,
               contentMd: document.contentMd,
               tags: document.tags,
             }}

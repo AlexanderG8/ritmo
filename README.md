@@ -140,6 +140,28 @@ Los dos rituales y todo lo que pasa entre ellos.
   cierras, y anotas los **bloqueos** cuando ocurren, no el viernes de memoria.
 - **Viernes:** la retro. Arrastras o descartas, escribes qué salió bien y qué hay
   que mejorar, y la semana se cierra en una sola transacción.
+- **Informe semanal:** una página imprimible con lo que la semana puede demostrar
+  —cumplimiento, planificado contra no planificado, tiempo real por categoría y
+  bloqueos— y su descarga en `.md`. Es el dato con el que defiendes tu tiempo
+  ante la empresa, y hasta ahora no salía de la app.
+
+</details>
+
+<details>
+<summary><b>Proyectos</b> — lo que dura más de una semana</summary>
+<br/>
+
+El ciclo semanal contesta *"¿cumplí?"*. El proyecto contesta la otra pregunta:
+**"¿cuánto tiempo real llevo metido en esto?"**.
+
+- Compromisos y documentos pueden colgar de un proyecto. **Siempre opcional**:
+  un soporte suelto no pertenece a ninguno, y forzarlo llenaría la lista de
+  proyectos falsos.
+- El tiempo sale de los **bloques de foco cerrados**, nunca de un contador que
+  haya que mantener a mano.
+- Un proyecto con trabajo cerrado **no se borra**: se archiva. Y si se borra uno
+  sin historial, sus compromisos y documentos sobreviven sin proyecto — el
+  trabajo que hiciste no dejó de existir.
 
 </details>
 
@@ -205,14 +227,22 @@ git clone https://github.com/<tu-usuario>/ritmo.git && cd ritmo && npm install
 
 **2. Configura el entorno**
 
-Copia `.env.example` a `.env` y rellena las cuatro variables:
+Crea un `.env` con estas variables:
 
 | Variable | Qué es |
 |---|---|
 | `DATABASE_URL` | Cadena **pooled** de Neon (el host lleva `-pooler`) |
 | `DIRECT_URL` | Cadena **directa** (el mismo host sin `-pooler`) |
-| `APP_PASSWORD` | La contraseña con la que entrarás |
 | `AUTH_SECRET` | Secreto para firmar la sesión |
+| `GOOGLE_CLIENT_ID` | Credencial OAuth de Google Cloud Console |
+| `GOOGLE_CLIENT_SECRET` | La otra mitad de la credencial |
+| `ALLOWED_EMAILS` | Correos que pueden entrar, separados por comas |
+| `APP_URL` | URL pública, solo en producción (para el `redirect_uri`) |
+| `APP_PASSWORD` | Contraseña de respaldo |
+| `ALLOW_PASSWORD_LOGIN` | `1` fuerza la contraseña, `0` la apaga |
+
+Mientras no configures Google, **la contraseña sigue funcionando sola**: un
+despliegue sin credenciales no puede dejarte fuera de tu propia app.
 
 > Usar la cadena *pooled* para migraciones es el error número uno al empezar con
 > Neon. Por eso son dos variables distintas.
@@ -248,7 +278,7 @@ está paso a paso en **[docs/SETUP.md](docs/SETUP.md)**.
 | **Lenguaje** | TypeScript en modo `strict` |
 | **Interfaz** | Tailwind CSS v4 · shadcn/ui · Radix · Recharts · lucide |
 | **Datos** | Prisma 7 · Neon (PostgreSQL 18) · Zod |
-| **Auth** | Cookie firmada con HMAC-SHA256, sin sesiones en base de datos |
+| **Auth** | Google OAuth (OIDC, sin librería) con lista blanca · cookie firmada con HMAC-SHA256, sin sesiones en base de datos |
 | **Despliegue** | Vercel + Neon, ambos en capa gratuita |
 
 La arquitectura es de cuatro capas y el flujo de escritura siempre es el mismo:
@@ -263,19 +293,22 @@ Diagrama ER, cardinalidades y decisiones de modelado en
 
 ## Calidad
 
-Cinco suites que se ejecutan **contra PostgreSQL real** — siembran sus datos y los
-borran al terminar. No hay mocks: lo que interesa comprobar son las reglas y las
-transacciones.
+Ocho suites. Siete se ejecutan **contra PostgreSQL real** — siembran sus datos y
+los borran al terminar. No hay mocks: lo que interesa comprobar son las reglas y
+las transacciones.
 
 ```bash
-npm run check:dod     # 17 · la regla de documentación y el ciclo semanal
-npm run check:fase2   # 23 · bloques de foco, zona horaria, registro diario
-npm run check:fase3   # 25 · documentos, vinculación N:M, exportación
-npm run check:fase4   # 22 · métricas agregadas, racha, historial
-npm run check:fase5   # 28 · retro, cierre transaccional, arrastre, bloqueos
+npm run check:dod        # 17 · la regla de documentación y el ciclo semanal
+npm run check:fase2      # 23 · bloques de foco, zona horaria, registro diario
+npm run check:fase3      # 25 · documentos, vinculación N:M, exportación
+npm run check:fase4      # 22 · métricas agregadas, racha, historial
+npm run check:fase5      # 28 · retro, cierre transaccional, arrastre, bloqueos
+npm run check:informe    # 32 · informe semanal y su markdown
+npm run check:proyectos  # 27 · proyectos, agregados y borrado seguro
+npm run check:auth       # 36 · sesión, lista blanca e id_token de Google
 ```
 
-**115 comprobaciones en verde.** Cubren lo que más fácilmente miente en una app
+**210 comprobaciones en verde.** Cubren lo que más fácilmente miente en una app
 así: que el trabajo no planificado no contamine el cumplimiento, que los bloques
 de una semana no se cuelen en otra, que la racha se corte donde debe, y que no
 exista ningún segundo camino hacia "Hecho".

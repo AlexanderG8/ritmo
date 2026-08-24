@@ -3,7 +3,8 @@ import { formatDate } from "@/lib/dates";
 import { categoryLabel, docTypeLabel } from "@/lib/labels";
 import type { DocType } from "@/generated/prisma/enums";
 
-function frontmatter(fields: Record<string, string | undefined>): string {
+/** Cabecera YAML. La comparten la exportación de documentos y el informe semanal. */
+export function frontmatter(fields: Record<string, string | undefined>): string {
   const lines = Object.entries(fields)
     .filter(([, value]) => value)
     .map(([key, value]) => `${key}: ${value}`);

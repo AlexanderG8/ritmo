@@ -2,6 +2,7 @@ import type {
   CommitmentStatus,
   CycleStatus,
   DocType,
+  ProjectStatus,
   WorkCategory,
 } from "@/generated/prisma/enums";
 
@@ -27,6 +28,13 @@ export const cycleStatusLabel: Record<CycleStatus, string> = {
   PLANNING: "Planificando",
   ACTIVE: "En curso",
   CLOSED: "Cerrada",
+};
+
+export const projectStatusLabel: Record<ProjectStatus, string> = {
+  ACTIVE: "Activo",
+  PAUSED: "En pausa",
+  DONE: "Terminado",
+  ARCHIVED: "Archivado",
 };
 
 export const priorityLabel: Record<number, string> = {

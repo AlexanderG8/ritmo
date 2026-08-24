@@ -119,7 +119,10 @@ check("y también las notas sin ascender", todo.includes("Texto que no debe perd
 // ── Limpieza ───────────────────────────────────────────────────────
 await prisma.weeklyCycle.delete({ where: { id: cycle.id } });
 await prisma.document.deleteMany({ where: { id: { in: [promoted.id, second.id] } } });
-check("limpieza completa", (await prisma.document.count()) === 0 && (await prisma.commitment.count({ where: { id: { in: [withNotes.id, other.id, pendiente.id] } } })) === 0);
+// Se cuentan solo los datos sembrados aquí: contar toda la tabla daba por
+// bueno el borrado únicamente en una base vacía, y fallaba en cuanto había
+// un documento real guardado.
+check("limpieza completa", (await prisma.document.count({ where: { id: { in: [promoted.id, second.id] } } })) === 0 && (await prisma.commitment.count({ where: { id: { in: [withNotes.id, other.id, pendiente.id] } } })) === 0);
 
 let failed = 0;
 for (const [name, ok, detail] of results) {

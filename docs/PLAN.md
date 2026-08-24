@@ -40,11 +40,13 @@ la app. La herramienta refuerza el hábito; no lo crea.
 - Tailwind CSS v4 + shadcn/ui
 - Prisma ORM + Neon Postgres (**dos URLs**: pooled para runtime, direct para migrate — es el error nº1 al empezar con Neon)
 - Server Actions para todas las mutaciones, con `revalidatePath`
-- Zod + react-hook-form
+- Zod para validación. Los formularios van con `useActionState` + `FormData` nativo:
+  react-hook-form nunca llegó a hacer falta
 - Recharts
 - `date-fns` + `date-fns-tz`, todo normalizado a `America/Lima` **en el servidor**. Nunca confiar en la zona del cliente
 - Deploy: Vercel + Neon (free tier)
-- Auth: `middleware.ts` con password única en env var, **desde la Fase 0**
+- Auth: `proxy.ts` (el antiguo `middleware.ts`) desde la **Fase 0**. Empezó con
+  password única y desde la Fase 8 entra por Google con lista blanca
 - Sin estado global: RSC + `searchParams` para filtros. Nada de Zustand ni Redux
 
 ---
@@ -93,6 +95,9 @@ Todo lo demás es adorno.
 /docs/nuevo           Editor markdown
 /docs/[id]            Ver / editar
 /metricas             Gráficos de tendencia
+/semana/informe       Informe imprimible + descarga .md
+/proyectos            Listado de proyectos
+/proyectos/[id]       Detalle: tiempo real, compromisos y documentos
 ```
 
 ---
@@ -130,8 +135,17 @@ cumplir. Sin esa métrica, el sistema premia la cobardía.
 | **1** — Núcleo utilizable ✅ | `WeeklyCycle` + `Commitment` con CRUD, `wasPlanned`, `docNotes`, **`completeCommitment()` con el DoD activo**, `/semana` y `/semana/planificar` | Un ciclo semanal real completado con la app. No se construye nada más hasta que eso ocurra |
 | **2** — Bloques y diario ✅ | `FocusBlock` + `DailyLog` + `/hoy` con timer, contador de distracciones, win diario | Una semana registrando bloques |
 | **3** — Documentación real ✅ | `Document`, editor markdown, N:N, ascenso de `docNotes`, **export a markdown** | La documentación puede salir de la app en archivos |
-| **4** — Métricas | Dashboard Recharts, agregados, historial | Las 3 métricas clave visibles |
+| **4** — Métricas ✅ | Dashboard Recharts, agregados, historial | Las 3 métricas clave visibles |
 | **5** — Pulido ✅ | Retro del viernes, bloqueos, arrastre automático | El ciclo semanal se cierra solo y arrastra a la semana siguiente |
+| **6** — Informe semanal ✅ | `/semana/informe` imprimible + export `.md` reutilizando `weekMetrics()` y `categoryDistribution()` | La semana sale de la app en un archivo que se puede enseñar |
+| **7** — Proyectos ✅ | Modelo `Project`, relación opcional desde `Commitment` y `Document`, métricas por proyecto | Se puede responder cuánto tiempo real lleva un proyecto |
+| **8** — Login con Google ✅ | OIDC contra Google sin librería, lista blanca de correos, contraseña como respaldo | Se entra con Google y solo los correos autorizados pasan |
+
+### Por qué en ese orden
+
+Primero lo que no toca el esquema, después la migración aditiva y al final la
+autenticación: es lo único que, mal hecho, te deja fuera del despliegue. Por eso
+la contraseña sobrevive apagada en vez de borrarse.
 
 ---
 

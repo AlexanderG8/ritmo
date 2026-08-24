@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Field, Select } from "@/components/field";
+import { ProjectField, type ProjectOption } from "@/components/project-field";
 import { FormError, FormSuccess } from "@/components/form-message";
 import { Markdown } from "@/components/markdown";
 import { docTypeLabel } from "@/lib/labels";
@@ -20,6 +21,7 @@ export type DocumentDraft = {
   title: string;
   type: DocType;
   module: string | null;
+  projectId: string | null;
   contentMd: string;
   tags: string[];
 };
@@ -33,7 +35,13 @@ const plantilla = `## Qué hace
 ## Pendientes conocidos
 `;
 
-export function DocumentForm({ document }: { document?: DocumentDraft }) {
+export function DocumentForm({
+  document,
+  projects,
+}: {
+  document?: DocumentDraft;
+  projects: ProjectOption[];
+}) {
   const editing = document !== undefined;
   const [state, action, pending] = useActionState<ActionState, FormData>(
     editing ? updateDocumentAction : createDocumentAction,
@@ -83,6 +91,8 @@ export function DocumentForm({ document }: { document?: DocumentDraft }) {
           />
         </Field>
       </div>
+
+      <ProjectField projects={projects} defaultValue={document?.projectId} />
 
       <Field
         htmlFor="tags"
