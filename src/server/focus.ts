@@ -151,3 +151,45 @@ export async function minutesByCommitment(commitmentIds: string[]) {
       .map((row) => [row.commitmentId as string, row._sum.actualMinutes ?? 0]),
   );
 }
+
+export type BlockStats = {
+  workedMinutes: number;
+  distractions: number;
+  interruptedMinutes: number;
+  protectedShare: number | null;
+};
+
+/**
+ * Agregado de bloques entre dos fechas, para una sola semana.
+ * `weekHistory()` calcula lo mismo para doce semanas de una sentada partiendo
+ * un único findMany; aquí se consulta el rango directo porque pedir doce
+ * semanas para leer una sería peor. Los minutos solo cuentan bloques cerrados:
+ * un bloque abierto todavía no es tiempo trabajado.
+ */
+export async function weekBlockStats(from: Date, to: Date): Promise<BlockStats> {
+  const blocks = await prisma.focusBlock.findMany({
+    where: { date: { gte: from, lte: to } },
+    select: {
+      actualMinutes: true,
+      distractions: true,
+      interruptedMinutes: true,
+      wasProtected: true,
+      actualEnd: true,
+    },
+  });
+
+  const finished = blocks.filter((block) => block.actualEnd !== null);
+
+  return {
+    workedMinutes: finished.reduce((sum, b) => sum + b.actualMinutes, 0),
+    distractions: blocks.reduce((sum, b) => sum + b.distractions, 0),
+    interruptedMinutes: finished.reduce(
+      (sum, b) => sum + b.interruptedMinutes,
+      0,
+    ),
+    protectedShare:
+      finished.length > 0
+        ? finished.filter((b) => b.wasProtected).length / finished.length
+        : null,
+  };
+}

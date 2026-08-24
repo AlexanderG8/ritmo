@@ -1,5 +1,7 @@
-import { History } from "lucide-react";
+import Link from "next/link";
+import { FileBarChart, History } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
 import { Section, SectionTitle } from "@/components/section";
@@ -50,9 +52,17 @@ export default async function HistorialPage() {
                         : ""}
                     </p>
                   </div>
-                  <Badge variant="outline">
-                    {cycleStatusLabel[cycle.status]}
-                  </Badge>
+                  <div className="flex items-center gap-2">
+                    <Button asChild variant="ghost" size="sm">
+                      <Link href={`/semana/informe?cycle=${cycle.id}`}>
+                        <FileBarChart aria-hidden className="size-4" />
+                        Informe
+                      </Link>
+                    </Button>
+                    <Badge variant="outline">
+                      {cycleStatusLabel[cycle.status]}
+                    </Badge>
+                  </div>
                 </div>
 
                 <dl className="grid grid-cols-2 gap-3 sm:grid-cols-4">

@@ -19,6 +19,8 @@ export const commitmentInput = z.object({
     .max(2400, "Divide eso en compromisos más pequeños.")
     .optional(),
   requiresDoc: z.boolean(),
+  // Opcional: un soporte suelto no pertenece a ningún proyecto.
+  projectId: z.string().trim().min(1).optional(),
 });
 
 export type CommitmentInput = z.infer<typeof commitmentInput>;
@@ -43,6 +45,7 @@ export async function createCommitment(cycleId: string, input: CommitmentInput) 
       ...input,
       description: input.description || null,
       plannedMinutes: input.plannedMinutes ?? null,
+      projectId: input.projectId ?? null,
       wasPlanned: cycle.status === "PLANNING",
     },
   });

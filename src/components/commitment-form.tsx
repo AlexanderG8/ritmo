@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { CheckboxField, Field, Select } from "@/components/field";
+import { ProjectField, type ProjectOption } from "@/components/project-field";
 import { FormError } from "@/components/form-message";
 import { categoryLabel, priorityLabel } from "@/lib/labels";
 import {
@@ -16,9 +17,11 @@ import {
 export function CommitmentForm({
   cycleId,
   unplanned,
+  projects,
 }: {
   cycleId: string;
   unplanned: boolean;
+  projects: ProjectOption[];
 }) {
   const [state, formAction, pending] = useActionState<ActionState, FormData>(
     createCommitmentAction,
@@ -80,6 +83,8 @@ export function CommitmentForm({
           />
         </Field>
       </div>
+
+      <ProjectField projects={projects} />
 
       <Field htmlFor="description" label="Detalle (opcional)">
         <Textarea id="description" name="description" rows={2} />

@@ -26,6 +26,7 @@ function parse(formData: FormData) {
     title: formData.get("title"),
     type: formData.get("type"),
     module: formData.get("module") || undefined,
+    projectId: formData.get("projectId") || undefined,
     contentMd: formData.get("contentMd"),
     tags: formData.get("tags") || undefined,
   });

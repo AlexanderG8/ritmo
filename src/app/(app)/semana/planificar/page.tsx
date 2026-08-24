@@ -18,6 +18,7 @@ import { Section, SectionTitle } from "@/components/section";
 import { formatDate, formatMinutes } from "@/lib/dates";
 import { categoryLabel, priorityLabel } from "@/lib/labels";
 import { getCurrentCycleWithCommitments } from "@/server/cycles";
+import { assignableProjects } from "@/server/projects";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +61,7 @@ function Step({
 
 export default async function PlanificarPage() {
   const { cycle, commitments } = await getCurrentCycleWithCommitments();
+  const projects = await assignableProjects();
 
   const planned = commitments.filter((c) => c.wasPlanned);
   const committedMinutes = planned.reduce(
@@ -117,7 +119,11 @@ export default async function PlanificarPage() {
               </>
             }
           >
-            <CommitmentForm cycleId={cycle.id} unplanned={false} />
+            <CommitmentForm
+              cycleId={cycle.id}
+              unplanned={false}
+              projects={projects}
+            />
           </Step>
 
           <Section>

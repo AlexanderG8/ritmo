@@ -18,11 +18,23 @@ migración inicial en `prisma/migrations/20260820151639_init/`.
 erDiagram
     WeeklyCycle ||--o{ Commitment : "contiene"
     WeeklyCycle ||--o{ Blocker : "registra"
+    Project     ||--o{ Commitment : "agrupa"
+    Project     ||--o{ Document : "agrupa"
     Commitment  ||--o{ FocusBlock : "recibe tiempo de"
     Commitment  ||--o{ Blocker : "es frenado por"
     Commitment  ||--o{ CommitmentDocument : "se documenta en"
     Document    ||--o{ CommitmentDocument : "documenta a"
     Commitment  ||..o| Commitment : "carriedFromId"
+
+    Project {
+        string   id PK
+        string   name UK
+        text     description "nullable"
+        string   module "nullable"
+        enum     status "ProjectStatus"
+        datetime createdAt
+        datetime updatedAt
+    }
 
     WeeklyCycle {
         string   id PK
@@ -50,6 +62,7 @@ erDiagram
         text     docNotes "nullable"
         datetime completedAt "nullable"
         string   carriedFromId "nullable, sin FK"
+        string   projectId FK "nullable"
         datetime createdAt
         datetime updatedAt
     }
@@ -76,6 +89,7 @@ erDiagram
         string   title
         enum     type "DocType"
         string   module "nullable"
+        string   projectId FK "nullable"
         text     contentMd
         string   tags "text[]"
         datetime createdAt
@@ -123,10 +137,17 @@ sobreviva aunque un ciclo se borre.
 | `Commitment` → `Blocker` | 1 : N (opcional) | `SetNull` |
 | `Commitment` ↔ `Document` | **N : M** vía `CommitmentDocument` | `Cascade` en ambos lados de la tabla puente |
 | `Commitment` → `Commitment` | 0..1 (`carriedFromId`) | Sin FK: es una referencia histórica |
+| `Project` → `Commitment` | 1 : N (opcional) | `SetNull` — el trabajo sobrevive al proyecto |
+| `Project` → `Document` | 1 : N (opcional) | `SetNull` |
 
 **Por qué `FocusBlock` usa `SetNull` y no `Cascade`:** si borras un compromiso, el
 tiempo que dedicaste no dejó de existir. El bloque queda sin vincular pero sigue
 contando en el total del día y en la distribución por categoría.
+
+**Por qué `Project` usa `SetNull` en ambos lados:** por el mismo motivo que
+`FocusBlock`. Borrar un proyecto no borra las horas que le dedicaste ni la
+documentación que escribiste; solo deja de agruparlas. Y un proyecto con
+compromisos ya cerrados directamente no se puede borrar: se archiva.
 
 **Por qué `carriedFromId` no es una clave foránea:** es un rastro de auditoría
 hacia una tarea que puede pertenecer a una semana ya eliminada. Una FK obligaría
@@ -141,6 +162,7 @@ resuelve como referencia suelta.
 | `CommitmentStatus` | `PLANNED`, `IN_PROGRESS`, `BLOCKED`, `DONE`, `CARRIED_OVER`, `DROPPED` | **`DONE` es inalcanzable manualmente** (ver 2.4) |
 | `WorkCategory` | `SOPORTE`, `DESARROLLO`, `REPORTES`, `DOCUMENTACION`, `APRENDIZAJE`, `REUNION` | Modela el puesto real: soporte de ERP, app interna, reportes |
 | `DocType` | `FEATURE`, `PROCESO`, `INCIDENTE`, `REPORTE`, `DECISION` | |
+| `ProjectStatus` | `ACTIVE`, `PAUSED`, `DONE`, `ARCHIVED` | `ARCHIVED` es la alternativa al borrado cuando hay historial |
 
 ## 1.4 Índices y restricciones
 
@@ -152,6 +174,9 @@ resuelve como referencia suelta.
 | `Commitment` | `@@index([cycleId, wasPlanned])` | Cálculo del cumplimiento y del trabajo no planificado |
 | `FocusBlock` | `@@index([date])`, `@@index([commitmentId])` | Bloques del día; suma de minutos por compromiso |
 | `Document` | `@@index([type])` | Filtro por tipo en `/docs` |
+| `Project` | `name @unique` | Dos proyectos con el mismo nombre serían el mismo proyecto |
+| `Project` | `@@index([status])` | Separar activos de archivados en el listado |
+| `Commitment` / `Document` | `@@index([projectId])` | Agregados por proyecto |
 | `CommitmentDocument` | `@@id([commitmentId, documentId])` | Clave primaria compuesta: impide vincular dos veces el mismo par |
 | `Blocker` | `@@index([cycleId, resolved])` | Sin resolver primero |
 | `DailyLog` | `date @unique` | **Un registro por día**: se corrige, no se duplica |
@@ -164,8 +189,17 @@ instantes usan `DateTime`. Todo se normaliza a `America/Lima` **en el servidor**
 Vercel un bloque de las 14:30 se guardaría como 14:30 UTC —09:30 en Lima— y las
 columnas de fecha caerían un día antes.
 
-**No hay tabla de usuarios.** Es una herramienta personal con una contraseña
-única. Añadir `User` y `userId` habría sido complejidad sin caso de uso.
+**No hay tabla de usuarios.** Es una herramienta personal con un solo dueño.
+Desde la Fase 8 se entra con Google, pero **sigue sin haber `User` ni `userId`**:
+Google es la puerta, no un sistema multiusuario. Quién puede pasar lo decide una
+lista blanca de correos en variable de entorno. Añadir `User` obligaría a
+reescribir cada consulta de `src/server` para filtrar por usuario, y no hay un
+segundo usuario que lo justifique.
+
+**El proyecto es opcional en todas partes.** `Commitment.projectId` y
+`Document.projectId` son nulables a propósito: una incidencia de soporte no
+pertenece a ningún proyecto, y obligar a elegir uno llenaría la tabla de
+proyectos inventados para satisfacer al formulario.
 
 **No existe `Commitment.actualMinutes`.** El tiempo real **se deriva** sumando los
 `FocusBlock` vinculados. Una columna contadora que se actualiza a mano desde
@@ -217,10 +251,11 @@ src/
   app/
     (app)/       rutas autenticadas, con navegación común
       hoy/       bloques de foco y registro diario
-      semana/    ciclo, planificar, retro, historial
+      semana/    ciclo, planificar, retro, historial, informe
+      proyectos/ listado y detalle
       docs/      listado, nuevo, detalle
       metricas/  tendencias
-    api/         health y exportación a markdown
+    api/         health, exportación a markdown, informe semanal y OAuth
     login/       acceso por contraseña
     layout.tsx   raíz: fuentes, tema, idioma
     page.tsx     redirige a /semana
@@ -256,16 +291,49 @@ saltarse desde otro sitio:
 | No se cierra una tarea sin documentar | `completeCommitment()` en `src/server/commitments.ts` | `changeStatus()` **rechaza explícitamente** `DONE`. Si aparece un segundo camino, falla en vez de vaciar la regla en silencio |
 | Un ciclo solo se cierra por la retro | `closeCycle()` en `src/server/retro.ts` | Todo en una transacción: retro, arrastre, descarte y creación de la semana siguiente |
 | Un documento no deja huérfano a un cerrado | `deleteDocument()` / `unlinkDocument()` en `src/server/documents.ts` | Impide vaciar la regla del DoD borrando la prueba a posteriori |
+| Un proyecto con historial no se borra | `deleteProject()` en `src/server/projects.ts` | Rechaza el borrado si tiene compromisos `DONE`; para eso está `ARCHIVED` |
+| Quién puede entrar | `isAllowedEmail()` en `src/lib/auth.ts` | La lista blanca se consulta en un solo punto: el callback de Google |
 
 ## 2.5 Autenticación
 
 `src/proxy.ts` (en Next.js 16 el antiguo `middleware.ts`) intercepta toda petición
-que no sea `/login` ni un recurso estático y exige una cookie de sesión válida.
+que no sea pública ni un recurso estático y exige una cookie de sesión válida.
+Las rutas públicas son `/login` y `/api/auth/google/*`: el callback de Google
+**tiene** que atravesar la puerta, porque su trabajo es precisamente crear la
+sesión que todavía no existe.
 
-La cookie es `expiraEnMs.HMAC-SHA256(expiraEnMs, AUTH_SECRET)`. **No hay sesiones
-en base de datos**: el token se valida criptográficamente. Las comparaciones de
-contraseña y de firma son de tiempo constante, y la cookie es `httpOnly`,
-`sameSite=lax` y `secure` en producción.
+La cookie es `expiraEnMs.correo.HMAC-SHA256(payload, AUTH_SECRET)`. **No hay
+sesiones en base de datos**: el token se valida criptográficamente. El correo
+viaja dentro del payload firmado, así que no se puede cambiar sin romper la
+firma. Los tokens del formato anterior —sin correo— siguen siendo válidos: nadie
+tiene que volver a entrar por desplegar el cambio.
+
+### Flujo con Google
+
+Authorization Code Flow contra los endpoints del documento de descubrimiento de
+Google, **sin librería de autenticación**:
+
+1. `/api/auth/google/start` genera `state` y `nonce` aleatorios, los guarda en
+   cookies `httpOnly` de diez minutos y redirige a Google.
+2. `/api/auth/google/callback` comprueba el `state` en tiempo constante, canjea
+   el código contra el token endpoint y lee el `id_token`.
+3. Se valida `iss`, `aud`, `exp`, `nonce` y `email_verified`, y se comprueba la
+   lista blanca `ALLOWED_EMAILS`. Solo entonces se emite la cookie de sesión.
+
+**La firma del `id_token` no se verifica, a propósito.** La documentación de
+Google lo dice para este flujo: el token llega por un canal HTTPS directo, sin
+intermediarios, autenticado con el client secret, así que se sabe que viene de
+Google. Si algún día ese token llegara desde el cliente en lugar del token
+endpoint, esa premisa se cae y habría que verificar la firma RS256 contra el
+JWKS. Está escrito en el propio `src/lib/google-oauth.ts` para que quien lo toque
+lo lea.
+
+La contraseña única sobrevive como respaldo, gobernada por
+`ALLOW_PASSWORD_LOGIN`. Sin decidir nada, sigue viva mientras Google no esté
+configurado: equivocarse hacia “no puedo entrar en mi app” es peor que
+equivocarse hacia “sigue habiendo contraseña”. Las comparaciones de contraseña,
+de `state` y de firma son de tiempo constante, y todas las cookies son
+`httpOnly`, `sameSite=lax` y `secure` en producción.
 
 Detalle relevante: `proxy.ts` corre en **runtime Node.js**, no en edge — por eso
 puede usar `node:crypto` para verificar la firma. Con el antiguo middleware edge
@@ -296,8 +364,9 @@ declara en `prisma.config.ts`.
 
 ## 2.8 Verificación
 
-Cinco suites ejecutan contra la base real, siembran sus datos y los borran al
-terminar. **115 comprobaciones** en total:
+Ocho suites. Siete ejecutan contra la base real, siembran sus datos y los borran
+al terminar; `check:auth` no toca la base porque lo que comprueba son funciones
+puras. **210 comprobaciones** en total:
 
 | Comando | Comprobaciones | Cubre |
 |---|---|---|
@@ -306,6 +375,9 @@ terminar. **115 comprobaciones** en total:
 | `npm run check:fase3` | 25 | Documentos, vinculación N:M, exportación |
 | `npm run check:fase4` | 22 | Agregados, racha, distribución por categoría |
 | `npm run check:fase5` | 28 | Retro, cierre transaccional, arrastre, bloqueos |
+| `npm run check:informe` | 32 | Informe semanal, agregados de la semana y su markdown |
+| `npm run check:proyectos` | 27 | Proyectos, métricas, `SetNull` y borrado seguro |
+| `npm run check:auth` | 36 | Sesión firmada, lista blanca e `id_token` de Google |
 
 No son tests unitarios con mocks: golpean Postgres de verdad, porque lo que
 interesa comprobar son las reglas y las transacciones, no las funciones aisladas.
@@ -368,7 +440,7 @@ Versiones exactas instaladas, no aproximadas.
 
 | Pieza | Detalle |
 |---|---|
-| **Vercel** | Capa gratuita. Requiere `DATABASE_URL`, `DIRECT_URL`, `APP_PASSWORD` y `AUTH_SECRET` |
+| **Vercel** | Capa gratuita. Requiere `DATABASE_URL`, `DIRECT_URL`, `AUTH_SECRET`, `APP_PASSWORD` y, para el acceso con Google, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS` y `APP_URL` |
 | **Neon** | Capa gratuita |
 | **Migraciones** | `npm run db:deploy` (`prisma migrate deploy`) |
 

@@ -19,6 +19,7 @@ function refresh() {
   revalidatePath("/semana");
   revalidatePath("/semana/planificar");
   revalidatePath("/hoy");
+  revalidatePath("/proyectos");
 }
 
 export async function createCommitmentAction(
@@ -31,6 +32,7 @@ export async function createCommitmentAction(
     category: formData.get("category"),
     priority: formData.get("priority"),
     plannedMinutes: formData.get("plannedMinutes") || undefined,
+    projectId: formData.get("projectId") || undefined,
     // Un checkbox desmarcado no viaja en el FormData: ausente = false.
     requiresDoc: formData.get("requiresDoc") === "on",
   });

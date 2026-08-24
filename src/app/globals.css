@@ -167,3 +167,40 @@
   font-variant-numeric: tabular-nums;
   font-feature-settings: "tnum" 1;
 }
+
+/*
+ * Impresión. El informe semanal se imprime desde el navegador: no hay librería
+ * de PDF en el servidor. Se fuerza el tema claro —una hoja en oscuro es
+ * ilegible y gasta tinta— y se quitan las superficies elevadas, que en papel
+ * no separan nada. La barra de navegación se oculta con `print:hidden` en el
+ * layout; aquí solo van las reglas que Tailwind no puede expresar por clase.
+ */
+@media print {
+  :root,
+  .dark,
+  .light {
+    color-scheme: light;
+  }
+
+  body {
+    background: white;
+  }
+
+  main {
+    padding: 0;
+    max-width: none;
+  }
+
+  /* Ni tarjetas ni anillos: en papel el borde de una métrica es ruido. */
+  [class*="ring-foreground"] {
+    --tw-ring-shadow: 0 0 #0000;
+    box-shadow: none;
+    border: 1px solid #ddd;
+  }
+
+  /* Una sección no se parte por la mitad entre dos hojas. */
+  section,
+  table {
+    break-inside: avoid;
+  }
+}

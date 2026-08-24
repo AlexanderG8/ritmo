@@ -1,5 +1,11 @@
 import Link from "next/link";
-import { CalendarClock, CalendarCheck, History, Inbox } from "lucide-react";
+import {
+  CalendarClock,
+  CalendarCheck,
+  FileBarChart,
+  History,
+  Inbox,
+} from "lucide-react";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -23,6 +29,7 @@ import { getCurrentCycleWithCommitments } from "@/server/cycles";
 import { formatPercent, weekMetrics } from "@/server/metrics";
 import { minutesByCommitment } from "@/server/focus";
 import { listBlockers } from "@/server/blockers";
+import { assignableProjects } from "@/server/projects";
 
 export const dynamic = "force-dynamic";
 
@@ -33,6 +40,7 @@ export default async function SemanaPage() {
   // que habría que mantener sincronizada a mano.
   const minutes = await minutesByCommitment(commitments.map((c) => c.id));
   const blockers = await listBlockers(cycle.id);
+  const projects = await assignableProjects();
 
   const open = commitments.filter(
     (c) => c.status !== "DONE" && c.status !== "DROPPED",
@@ -70,6 +78,12 @@ export default async function SemanaPage() {
                 </Link>
               </Button>
             ) : null}
+            <Button asChild variant="ghost" size="sm">
+              <Link href="/semana/informe">
+                <FileBarChart aria-hidden className="size-4" />
+                Informe
+              </Link>
+            </Button>
             <Button asChild variant="ghost" size="sm">
               <Link href="/semana/historial">
                 <History aria-hidden className="size-4" />
@@ -244,6 +258,7 @@ export default async function SemanaPage() {
               <CommitmentForm
                 cycleId={cycle.id}
                 unplanned={cycle.status !== "PLANNING"}
+                projects={projects}
               />
             </CardContent>
           </Card>

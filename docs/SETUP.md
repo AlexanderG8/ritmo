@@ -24,10 +24,14 @@ Estado: el proyecto local está listo y compila. Faltan **tus** dos pasos de cue
 > Con Prisma 7 la separación es explícita: la pooled la usa el adapter en runtime
 > (`src/lib/prisma.ts`), la directa la usa el CLI vía `prisma.config.ts`.
 
-## Paso 2 — Definir tu contraseña
+## Paso 2 — Definir tu acceso
 
 En `.env`, cambia `APP_PASSWORD` por la contraseña que usarás para entrar.
 `AUTH_SECRET` ya viene generado aleatoriamente; no hace falta tocarlo.
+
+La contraseña es hoy el **respaldo**: la puerta normal es Google (paso 5). Sigue
+activa por sí sola mientras `GOOGLE_CLIENT_ID` y `GOOGLE_CLIENT_SECRET` no
+existan, así que puedes desplegar y entrar antes de tener las credenciales.
 
 ## Paso 3 — Primera migración
 
@@ -45,9 +49,10 @@ npm run dev
 
 1. Sube el repo a GitHub (`git remote add origin …` && `git push -u origin main`).
 2. En <https://vercel.com/new> importa el repositorio.
-3. Añade las **cuatro** variables de entorno en Vercel: `DATABASE_URL`,
-   `DIRECT_URL`, `APP_PASSWORD`, `AUTH_SECRET`. Márcalas para los tres entornos
-   (Production, Preview y Development).
+3. Añade las variables de entorno en Vercel: `DATABASE_URL`, `DIRECT_URL`,
+   `AUTH_SECRET`, `APP_PASSWORD` y, cuando tengas el paso 5 hecho,
+   `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`, `ALLOWED_EMAILS` y `APP_URL`.
+   Márcalas para los tres entornos (Production, Preview y Development).
 4. Deploy.
 
 > **Las variables tienen que existir antes del primer build, no solo en
@@ -56,6 +61,37 @@ npm run dev
 > resuelve `env("DIRECT_URL")` al cargarse. Sin `DIRECT_URL` el build falla con
 > `PrismaConfigEnvError: Cannot resolve environment variable: DIRECT_URL`, antes
 > incluso de compilar Next.
+
+## Paso 5 — Acceso con Google
+
+Esto solo lo puedes hacer tú: requiere tu cuenta de Google.
+
+1. Entra en <https://console.cloud.google.com/apis/credentials> y crea unas
+   credenciales de tipo **ID de cliente de OAuth 2.0**, aplicación web.
+2. En **URIs de redireccionamiento autorizados** añade las dos que vayas a usar:
+   - `http://localhost:3000/api/auth/google/callback`
+   - `https://<tu-dominio>/api/auth/google/callback`
+   Tienen que coincidir carácter a carácter con las que envía la app.
+3. Copia el ID y el secreto a `.env`:
+
+```
+GOOGLE_CLIENT_ID=...apps.googleusercontent.com
+GOOGLE_CLIENT_SECRET=...
+ALLOWED_EMAILS=tu-correo@gmail.com
+APP_URL=https://<tu-dominio>
+```
+
+`ALLOWED_EMAILS` es una lista separada por comas. **Sin ella no entra nadie por
+Google**: un OAuth sin lista blanca deja pasar a cualquier cuenta del mundo.
+
+`APP_URL` solo hace falta en producción, para construir el `redirect_uri`: detrás
+del proxy de Vercel el origen que ve el servidor no siempre es el público.
+
+### Retirar la contraseña
+
+Cuando hayas comprobado **en producción** que entras con Google, pon
+`ALLOW_PASSWORD_LOGIN=0`. Antes no: si el OAuth está mal configurado y ya
+quitaste la contraseña, te quedas fuera de tu propia app.
 
 **Criterio de salida de la Fase 0:** el deploy está vivo, pide contraseña, y
 `/api/health` responde `{"ok":true,"db":"up"}` en producción. Hasta que eso ocurra,

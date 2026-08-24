@@ -11,6 +11,7 @@ export const documentInput = z.object({
     .max(140, "Máximo 140 caracteres."),
   type: z.enum(DocType),
   module: z.string().trim().max(80).optional(),
+  projectId: z.string().trim().min(1).optional(),
   contentMd: z
     .string()
     .trim()
@@ -81,6 +82,7 @@ export async function createDocument(input: DocumentInput) {
       title: input.title,
       type: input.type,
       module: input.module || null,
+      projectId: input.projectId ?? null,
       contentMd: input.contentMd,
       tags: input.tags,
     },
@@ -94,6 +96,7 @@ export async function updateDocument(id: string, input: DocumentInput) {
       title: input.title,
       type: input.type,
       module: input.module || null,
+      projectId: input.projectId ?? null,
       contentMd: input.contentMd,
       tags: input.tags,
     },

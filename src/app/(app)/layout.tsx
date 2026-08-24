@@ -9,7 +9,7 @@ import { logout } from "@/actions/session";
 export default function AppLayout({ children }: { children: ReactNode }) {
   return (
     <div className="flex min-h-svh flex-col">
-      <header className="bg-background/85 sticky top-0 z-20 border-b backdrop-blur">
+      <header className="bg-background/85 sticky top-0 z-20 border-b backdrop-blur print:hidden">
         <nav
           aria-label="Principal"
           className="mx-auto flex w-full max-w-6xl items-center gap-3 px-4 py-2.5 sm:px-6"
